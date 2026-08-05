@@ -137,13 +137,13 @@ const Datasets: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10">
-            <div className="flex flex-row gap-20 items-start">
-                <div className="w-full max-w-2xl flex flex-col gap-2 items-center justify-center ">
-                    <h2 className="text-headingMd text-text-primary"> Pre Clinical Statistics</h2>
+        <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10 py-10">
+            <div className="flex flex-row gap-20 items-center justify-center w-full">
+                <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center ">
+                    <h2 className="text-headingMd text-text-secon"> Pre Clinical Statistics</h2>
                     <Chart type="pie" data={pre_clinical_chart_data} className="w-full" />
                 </div>
-                <div className="w-full max-w-2xl flex flex-col gap-2 items-center justify-center ">
+                <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center ">
                     <h2 className="text-headingMd text-text-primary"> Clinical Statistics</h2>
                     <Chart type="pie" data={clinical_chart_data} className="w-full" />
                 </div>
@@ -189,7 +189,7 @@ const Datasets: React.FC = () => {
                                     ))}
                             </div>
                         )}
-                        header="Assay Layers"
+                        header="Data Layers"
                         style={{ width: '35%' }}
                     />
                 </DataTable>
@@ -231,7 +231,7 @@ const Datasets: React.FC = () => {
                                     ))}
                             </div>
                         )}
-                        header="Assay Layers"
+                        header="Data Layers"
                         style={{ width: '35%' }}
                     />
                 </DataTable>
