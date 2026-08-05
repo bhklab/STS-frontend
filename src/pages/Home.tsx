@@ -154,7 +154,7 @@ const Home: React.FC = () => {
                             <AnimatedCounter end={preclinical_datasets.length} duration={1300} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
-                            Pre Clinical Datasets
+                            Preclinical Datasets
                         </span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
@@ -170,7 +170,7 @@ const Home: React.FC = () => {
                             <AnimatedCounter end={200} duration={2200} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
-                            Pre Clinical Samples
+                            Preclinical Samples
                         </span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">

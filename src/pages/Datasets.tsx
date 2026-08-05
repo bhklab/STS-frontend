@@ -140,7 +140,7 @@ const Datasets: React.FC = () => {
         <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10 py-10">
             <div className="flex flex-row gap-20 items-center justify-center w-full">
                 <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center ">
-                    <h2 className="text-headingMd text-text-secon"> Pre Clinical Statistics</h2>
+                    <h2 className="text-headingMd text-text-secon"> Preclinical Statistics</h2>
                     <Chart type="pie" data={pre_clinical_chart_data} className="w-full" />
                 </div>
                 <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center ">
@@ -150,7 +150,7 @@ const Datasets: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-4 w-full">
-                <h1 className="text-heading2Xl font-semibold text-text-primary text-left">Pre Clinical Datasets</h1>
+                <h1 className="text-heading2Xl font-semibold text-text-primary text-left">Preclinical Datasets</h1>
                 <DataTable
                     value={preclinical_datasets}
                     sortMode="single"
