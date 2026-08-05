@@ -1,0 +1,196 @@
+@import 'tailwindcss';
+@source "./src";
+
+@theme {
+    /* Fonts */
+    --font-inter:
+        'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+        'Apple Color Emoji', 'Segoe UI Emoji';
+
+    --color-primary: #006494; /* Baltic Blue */
+    --color-secondary: #2e4c6e; /* soft Slate Blue */
+
+    /* Subsection colours derived from Baltic Blue */
+    --color-subsection-1: #e6f2f7; /* very light Baltic Blue */
+    --color-subsection-2: #cce5ef; /* light Baltic Blue */
+    --color-subsection-3: #99cadd; /* soft Baltic Blue */
+    --color-subsection-4: #66afcc; /* medium Baltic Blue */
+    --color-subsection-5: #338aaa; /* deep Baltic Blue */
+
+    --color-text-primary: #1f2937; /* near-black with blue undertone */
+    --color-text-secondary: #5f6f7f; /* muted blue-grey */
+
+    --color-border: #d7e0e8; /* soft blue-grey */
+    --color-background: #f5f8fb; /* subtle blue-tinted white */
+
+    --color-surface: #ffffff;
+
+    /* Colors */
+    --color-open-border: #b6b6b6;
+    --color-interactive: #2463bc;
+
+    /* Shadows for commonly use components*/
+    --shadow-card: 0px 2px 1px 0px #0000000d;
+    --shadow-button: 0px 1px 0px 0px rgba(0 0 0 / 0.05);
+
+    /* Radius configurations */
+    --radius-4xl: 30px;
+    --radius-4-5xl: 32px;
+
+    /* Spacing scale configurations */
+    --spacing-800: 800px;
+    --spacing-50: 196px;
+}
+
+/* Font sizes with line height */
+
+@utility text-heading4Xl {
+    font-size: 36px;
+    line-height: 44px;
+}
+
+@utility text-heading3Xl {
+    font-size: 32px;
+    line-height: 40px;
+}
+
+@utility text-heading2Xl {
+    font-size: 28px;
+    line-height: 32px;
+}
+
+@utility text-headingXl {
+    font-size: 24px;
+    line-height: 28px;
+}
+
+@utility text-headingLg {
+    font-size: 20px;
+    line-height: 24px;
+}
+
+@utility text-headingMd {
+    font-size: 16px;
+    line-height: 20px;
+}
+
+@utility text-headingSm {
+    font-size: 14px;
+    line-height: 16px;
+}
+
+@utility text-headingXs {
+    font-size: 12px;
+    line-height: 16px;
+}
+
+@utility text-bodyLg {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+@utility text-bodyMd {
+    font-size: 14px;
+    line-height: 20px;
+}
+
+@utility text-bodySm {
+    font-size: 12px;
+    line-height: 16px;
+}
+
+@utility text-bodyXs {
+    font-size: 11px;
+    line-height: 14px;
+}
+
+/* Custom variants for your max-width breakpoints */
+
+@custom-variant lg (@media (width <= 1500px));
+@custom-variant wrap (@media (width <= 1260px));
+@custom-variant md (@media (width <= 1050px));
+@custom-variant wrapSmall (@media (width <= 950px));
+@custom-variant smd (@media (width <= 800px));
+@custom-variant mmd (@media (width <= 700px));
+@custom-variant sm (@media (width <= 550px));
+@custom-variant xs (@media (width <= 450px));
+
+/* Transition-property: width */
+@utility transition-width {
+    transition-property: width;
+}
+
+/* 1.5px border helper  */
+@utility border-1_5 {
+    border-width: 1.5px;
+}
+
+/* Keyframes + animations — generates `animate-show` / `animate-hide` */
+@theme {
+    --animate-show: show 0.3s ease-out forwards;
+    --animate-hide: hide 0.3s ease-in forwards;
+
+    @keyframes show {
+        0% {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    @keyframes hide {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+    }
+}
+
+@layer primereact {
+    /* DATA TABLE COMPONENT (Rounding borders and cell centering)*/
+
+    /* Borders */
+    .p-datatable.p-datatable-gridlines {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .p-datatable .p-datatable-wrapper > table,
+    .p-datatable .p-datatable-scrollable-header table,
+    .p-datatable .p-datatable-scrollable-body table {
+        border-collapse: separate;
+        border-spacing: 0;
+        overflow: hidden;
+    }
+    .p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th:first-child {
+        border-top-left-radius: 8px;
+    }
+    .p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th:last-child {
+        border-top-right-radius: 8px;
+    }
+    .p-datatable.p-datatable-gridlines .p-datatable-tbody > tr:last-child > td:first-child {
+        border-bottom-left-radius: 8px;
+    }
+    .p-datatable.p-datatable-gridlines .p-datatable-tbody > tr:last-child > td:last-child {
+        border-bottom-right-radius: 8px;
+    }
+
+    /* Cell centering */
+    .p-column-header-content {
+        display: flex;
+        justify-content: center;
+        text-align: center;
+    }
+    .p-datatable-tbody > tr > td {
+        text-align: center !important;
+    }
+
+    .p-datatable {
+        font-size: 13px !important;
+    }
+}
