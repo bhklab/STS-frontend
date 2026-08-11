@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
+import { useContainerSize } from '../hooks/useContainerSize';
 import * as d3 from 'd3';
-import { type PlotDataPoint } from './DotPlot';
+import { type PlotDataPoint, TISSUE_COLORS, DEFAULT_COLOR } from './DotPlot';
 
 interface HeatmapInternalPoint {
     cellLine: string;
@@ -11,15 +12,15 @@ interface HeatmapInternalPoint {
 
 interface HeatmapProps {
     data: Record<string, PlotDataPoint[]>;
-    width?: number;
-    height?: number;
 }
 
-const Heatmap: React.FC<HeatmapProps> = ({ data, width = 1000, height = 500 }) => {
+const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
+    const [containerRef, width] = useContainerSize();
+    const height = Math.round(width * 0.45);
 
     useEffect(() => {
-        if (!svgRef.current || Object.keys(data).length === 0) return;
+        if (!svgRef.current || Object.keys(data).length === 0 || width === 0) return;
 
         // Flatten the Record into internal points
         const flat: HeatmapInternalPoint[] = [];
@@ -48,7 +49,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, width = 1000, height = 500 }) =
         });
 
         // Dimensions
-        const margin = { top: 100, right: 50, bottom: 100, left: 50 };
+        const margin = { top: 100, right: 100, bottom: 100, left: 100 };
         const innerW = width - margin.left - margin.right;
         const innerH = height - margin.top - margin.bottom;
 
@@ -90,6 +91,50 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, width = 1000, height = 500 }) =
             .style('transition', 'opacity 0.15s ease')
             .style('z-index', '10')
             .style('white-space', 'nowrap');
+
+        // Tissue annotation row
+        const annotationHeight = 12;
+        const annotationY = -20;
+
+        // Map cell line to tissue
+        const cellLineToTissue = new Map<string, string>();
+        flat.forEach(d => cellLineToTissue.set(d.cellLine, d.tissue));
+
+        g.selectAll('.tissue-cell')
+            .data(cellLines)
+            .enter()
+            .append('rect')
+            .attr('class', 'tissue-cell')
+            .attr('x', d => xScale(d) ?? 0)
+            .attr('y', annotationY)
+            .attr('width', xScale.bandwidth())
+            .attr('height', annotationHeight)
+            .attr('fill', d => {
+                const tissue = cellLineToTissue.get(d) ?? '';
+                return TISSUE_COLORS[tissue] ?? DEFAULT_COLOR;
+            })
+            .style('cursor', 'pointer')
+            .on('mouseenter', (_event, d) => {
+                const tissue = cellLineToTissue.get(d) ?? '';
+                tooltip.html(`<strong>Cell Line: ${d}</strong><br/>Tissue: ${tissue}`).style('opacity', '1');
+            })
+            .on('mousemove', event => {
+                const [mx, my] = d3.pointer(event, svgRef.current!.parentElement!);
+                tooltip.style('left', `${mx + 14}px`).style('top', `${my - 10}px`);
+            })
+            .on('mouseleave', () => {
+                tooltip.style('opacity', '0');
+            });
+
+        // Tissue label
+        g.append('text')
+            .attr('x', innerW + 10)
+            .attr('y', annotationY + annotationHeight / 2)
+            .attr('dy', '0.35em')
+            .attr('fill', '#1f2937')
+            .attr('font-size', '13px')
+            .attr('font-weight', '500')
+            .text('Tissue');
 
         // Cells
         g.selectAll('.cell')
@@ -138,6 +183,16 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, width = 1000, height = 500 }) =
             .attr('dx', '-0.6em')
             .attr('dy', '0.15em');
 
+        // X axis label
+        g.append('text')
+            .attr('x', innerW / 2)
+            .attr('y', innerH + 80)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#1f2937')
+            .attr('font-size', '13px')
+            .attr('font-weight', '500')
+            .text('Cell Line / Sample');
+
         // Y axis
         const yAxis = g.append('g').call(d3.axisLeft(yScale));
 
@@ -145,13 +200,27 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, width = 1000, height = 500 }) =
         yAxis.selectAll('.tick line').remove();
         yAxis.selectAll('.tick text').attr('fill', '#1f2937').attr('font-size', '13px').attr('font-weight', '500');
 
-        // Color legend
-        const legendWidth = 200;
-        const legendHeight = 12;
-        const legendX = innerW - legendWidth;
-        const legendY = -30;
+        // Y axis label
+        g.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -innerH / 2)
+            .attr('y', -50)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#1f2937')
+            .attr('font-size', '13px')
+            .attr('font-weight', '500')
+            .text('Gene');
 
-        // Gradient
+        // Color legend
+        const legendWidth = 150;
+        const legendHeight = 12;
+
+        // Position both legends at the top right, above the heatmap
+        const legendsY = -70;
+        const expressionLegendX = innerW - legendWidth - 120; // Room for Tissue legend
+        const tissueLegendX = innerW - 80;
+
+        // Gradient for expression
         const defs = svg.append('defs');
         const gradientId = 'heatmap-gradient';
         const linearGradient = defs.append('linearGradient').attr('id', gradientId).attr('x1', '0%').attr('x2', '100%');
@@ -166,7 +235,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, width = 1000, height = 500 }) =
                 .attr('stop-color', colorScale(val));
         }
 
-        const legendGroup = g.append('g').attr('transform', `translate(${legendX},${legendY})`);
+        const legendGroup = g.append('g').attr('transform', `translate(${expressionLegendX},${legendsY})`);
 
         legendGroup
             .append('rect')
@@ -175,13 +244,13 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, width = 1000, height = 500 }) =
             .attr('rx', 3)
             .style('fill', `url(#${gradientId})`);
 
-        // Legend axis
+        // Expression Legend axis
         const legendScale = d3.scaleLinear().domain(extent).range([0, legendWidth]);
 
         const legendAxis = legendGroup
             .append('g')
             .attr('transform', `translate(0,${legendHeight})`)
-            .call(d3.axisBottom(legendScale).ticks(5).tickSize(4));
+            .call(d3.axisBottom(legendScale).ticks(4).tickSize(4));
 
         legendAxis.select('.domain').remove();
         legendAxis.selectAll('.tick line').attr('stroke', '#c4cdd5');
@@ -190,12 +259,40 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, width = 1000, height = 500 }) =
         // Legend title
         legendGroup
             .append('text')
-            .attr('x', legendWidth / 2)
+            .attr('x', 0)
             .attr('y', -6)
-            .attr('text-anchor', 'middle')
-            .attr('fill', '#5f6f7f')
-            .attr('font-size', '11px')
-            .text('Gene expression');
+            .attr('text-anchor', 'start')
+            .attr('fill', '#1f2937')
+            .attr('font-size', '13px')
+            .attr('font-weight', '600')
+            .text('Value');
+
+        // Tissue Legend
+        const tissues = Array.from(new Set(flat.map(d => d.tissue)));
+        const tissueLegendGroup = g.append('g').attr('transform', `translate(${tissueLegendX}, ${legendsY - 15})`);
+
+        tissueLegendGroup
+            .append('text')
+            .attr('x', 0)
+            .attr('y', 9)
+            .attr('fill', '#1f2937')
+            .attr('font-size', '13px')
+            .attr('font-weight', '600')
+            .text('Tissue');
+
+        tissues.forEach((t, i) => {
+            const row = tissueLegendGroup.append('g').attr('transform', `translate(0, ${22 + i * 16})`);
+
+            row.append('rect')
+                .attr('x', 0)
+                .attr('y', -6)
+                .attr('width', 12)
+                .attr('height', 12)
+                .attr('rx', 2)
+                .attr('fill', TISSUE_COLORS[t] ?? DEFAULT_COLOR);
+
+            row.append('text').attr('x', 18).attr('y', 4).attr('fill', '#5f6f7f').attr('font-size', '12px').text(t);
+        });
 
         return () => {
             tooltip.remove();
@@ -203,8 +300,11 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, width = 1000, height = 500 }) =
     }, [data, width, height]);
 
     return (
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-            <svg ref={svgRef} />
+        <div
+            ref={containerRef}
+            style={{ position: 'relative', width: '100%', height: height || 'auto', overflow: 'hidden' }}
+        >
+            <svg ref={svgRef} style={{ position: 'absolute', top: 0, left: 0 }} />
         </div>
     );
 };

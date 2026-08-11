@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { useContainerSize } from '../hooks/useContainerSize';
 import * as d3 from 'd3';
 
 export interface PlotDataPoint {
@@ -10,22 +11,22 @@ export interface PlotDataPoint {
 interface DotPlotProps {
     data: PlotDataPoint[];
     gene: string;
-    width?: number;
-    height?: number;
 }
 
-const TISSUE_COLORS: Record<string, string> = {
+export const TISSUE_COLORS: Record<string, string> = {
     'Soft Tissue': '#6a9fc8', // muted steel-blue
     Uterus: '#e8917a' // warm salmon
 };
 
-const DEFAULT_COLOR = '#999999';
+export const DEFAULT_COLOR = '#999999';
 
-const DotPlot: React.FC<DotPlotProps> = ({ data, gene, width = 1000, height = 1000 }) => {
+const DotPlot: React.FC<DotPlotProps> = ({ data, gene }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
+    const [containerRef, width] = useContainerSize();
+    const height = Math.round(width * 0.5);
 
     useEffect(() => {
-        if (!svgRef.current || data.length === 0) return;
+        if (!svgRef.current || data.length === 0 || width === 0) return;
 
         // Dimensions
         const margin = { top: 40, right: 140, bottom: 100, left: 70 };
@@ -109,6 +110,16 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, gene, width = 1000, height = 10
             .attr('dx', '-0.6em')
             .attr('dy', '0.15em');
 
+        // X axis label
+        g.append('text')
+            .attr('x', innerW / 2)
+            .attr('y', innerH + 80)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#1f2937')
+            .attr('font-size', '13px')
+            .attr('font-weight', '500')
+            .text('Cell Line / Sample');
+
         // Dots
         g.selectAll('.dot')
             .data(sorted)
@@ -150,7 +161,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, gene, width = 1000, height = 10
             .attr('r', 12)
             .attr('fill', 'transparent')
             .style('cursor', 'pointer')
-            .on('mouseenter', (event, d) => {
+            .on('mouseenter', (_event, d) => {
                 tooltip
                     .html(`<strong>${d.cellLine}</strong><br/>Value: ${d.value.toFixed(2)}<br/>Tissue: ${d.tissue}`)
                     .style('opacity', '1');
@@ -204,8 +215,11 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, gene, width = 1000, height = 10
     }, [data, gene, width, height]);
 
     return (
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-            <svg ref={svgRef} />
+        <div
+            ref={containerRef}
+            style={{ position: 'relative', width: '100%', height: height || 'auto', overflow: 'hidden' }}
+        >
+            <svg ref={svgRef} style={{ position: 'absolute', top: 0, left: 0 }} />
         </div>
     );
 };

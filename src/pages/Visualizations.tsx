@@ -171,101 +171,105 @@ const Visualizations: React.FC = () => {
     const [gene, setGene] = useState<string>('ATRX');
 
     return (
-        <div className={`flex flex-row gap-4 bg-background min-h-screen justify-center items-start px-10 py-10`}>
-            <Tooltip target=".preclinical-icon" />
-            <Tooltip target=".clinical-icon" />
-            <div className="flex flex-col min-w-75 max-w-lg gap-4 bg-white p-4 rounded-md shadow-card border border-border/75">
-                <div className="flex flex-row">
-                    <div className="flex flex-row gap-4 justify-center">
-                        <div
-                            className={`p-2 rounded-md cursor-pointer ${!clinical ? 'bg-subsection-1' : ''} hover:bg-subsection-1 preclinical-icon`}
-                            onClick={() => setClinical(false)}
-                            data-pr-tooltip="Pre-clinical data"
-                            data-pr-position="top"
-                            data-pr-at="center top-10"
-                        >
-                            <Microscope className={`${!clinical ? 'text-primary' : 'text-text-primary'}`} />
-                        </div>
+        <div className="w-full bg-background px-10 py-10 wrap:py-4">
+            <div
+                className={`flex flex-row gap-4 max-w-[2000px] m-auto min-h-screen justify-center items-start wrap:justify-start wrap:flex-col wrap:w-full`}
+            >
+                <Tooltip target=".preclinical-icon" />
+                <Tooltip target=".clinical-icon" />
+                <div className="flex flex-col min-w-75 gap-4 bg-white p-4 rounded-md shadow-card border border-border/75 wrap:w-full wrap:flex-row wrap:flex-wrap">
+                    <div className="flex flex-row">
+                        <div className="flex flex-row gap-4 justify-center">
+                            <div
+                                className={`p-2 rounded-md cursor-pointer ${!clinical ? 'bg-subsection-1' : ''} hover:bg-subsection-1 preclinical-icon`}
+                                onClick={() => setClinical(false)}
+                                data-pr-tooltip="Pre-clinical data"
+                                data-pr-position="top"
+                                data-pr-at="center top-10"
+                            >
+                                <Microscope className={`${!clinical ? 'text-primary' : 'text-text-primary'}`} />
+                            </div>
 
-                        <div
-                            className={`p-2 rounded-md cursor-pointer ${clinical ? 'bg-subsection-1' : ''} hover:bg-subsection-1 clinical-icon`}
-                            onClick={() => setClinical(true)}
-                            data-pr-tooltip="Clinical data"
-                            data-pr-position="top"
-                            data-pr-at="center top-10"
-                        >
-                            <Hospital className={`${clinical ? 'text-primary' : 'text-text-primary'}`} />
+                            <div
+                                className={`p-2 rounded-md cursor-pointer ${clinical ? 'bg-subsection-1' : ''} hover:bg-subsection-1 clinical-icon`}
+                                onClick={() => setClinical(true)}
+                                data-pr-tooltip="Clinical data"
+                                data-pr-position="top"
+                                data-pr-at="center top-10"
+                            >
+                                <Hospital className={`${clinical ? 'text-primary' : 'text-text-primary'}`} />
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div className="flex">
-                    {clinical ? (
+                    <div className="flex">
+                        {clinical ? (
+                            <Dropdown
+                                value={dataset}
+                                onChange={e => setDataset(e.value)}
+                                options={clinicalDatasets}
+                                optionLabel="name"
+                                placeholder="Select a clinical dataset"
+                                className="w-full wrap:w-14rem"
+                            />
+                        ) : (
+                            <Dropdown
+                                value={dataset}
+                                onChange={e => setDataset(e.value)}
+                                options={preclinicalDatasets}
+                                optionLabel="name"
+                                placeholder="Select a preclinical dataset"
+                                className="w-full wrap:w-14rem"
+                            />
+                        )}
+                    </div>
+                    <div className="flex">
                         <Dropdown
-                            value={dataset}
-                            onChange={e => setDataset(e.value)}
-                            options={clinicalDatasets}
-                            optionLabel="name"
-                            placeholder="Select a clinical dataset"
-                            className="w-full md:w-14rem"
+                            value={visualization}
+                            onChange={e => setVisualization(e.value)}
+                            options={availableVisualizations}
+                            placeholder="Select a visualization"
+                            className="w-full wrap:w-14rem"
                         />
-                    ) : (
+                    </div>
+                    <div className="flex">
                         <Dropdown
-                            value={dataset}
-                            onChange={e => setDataset(e.value)}
-                            options={preclinicalDatasets}
-                            optionLabel="name"
-                            placeholder="Select a preclinical dataset"
-                            className="w-full md:w-14rem"
+                            value={layer}
+                            onChange={e => setLayer(e.value)}
+                            options={availableLayers}
+                            placeholder="Select a molecular profile"
+                            className="w-full wrap:w-14rem"
                         />
+                    </div>
+                    {layer === 'Treatment Response' && (
+                        <div className="flex">
+                            <Dropdown
+                                value={responseType}
+                                onChange={e => setResponseType(e.value)}
+                                options={availableResponseTypes}
+                                placeholder="Select a response type"
+                                className="w-full wrap:w-14rem"
+                            />
+                        </div>
+                    )}
+                    {visualization === 'Scatter Plot' && (
+                        <div className="flex">
+                            <Dropdown
+                                value={gene}
+                                onChange={e => setGene(e.value)}
+                                options={availableGenes}
+                                placeholder="Select gene"
+                                className="w-full wrap:w-14rem"
+                            />
+                        </div>
                     )}
                 </div>
-                <div className="flex">
-                    <Dropdown
-                        value={visualization}
-                        onChange={e => setVisualization(e.value)}
-                        options={availableVisualizations}
-                        placeholder="Select a visualization"
-                        className="w-full md:w-14rem"
-                    />
+                <div className="flex flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 wrap:w-full wrap:flex-0">
+                    {visualization === 'Scatter Plot' ? (
+                        <DotPlot data={plotData[gene]} gene={gene} />
+                    ) : (
+                        <Heatmap data={plotData} />
+                    )}
                 </div>
-                <div className="flex">
-                    <Dropdown
-                        value={layer}
-                        onChange={e => setLayer(e.value)}
-                        options={availableLayers}
-                        placeholder="Select a molecular profile"
-                        className="w-full md:w-14rem"
-                    />
-                </div>
-                {layer === 'Treatment Response' && (
-                    <div className="flex">
-                        <Dropdown
-                            value={responseType}
-                            onChange={e => setResponseType(e.value)}
-                            options={availableResponseTypes}
-                            placeholder="Select a response type"
-                            className="w-full md:w-14rem"
-                        />
-                    </div>
-                )}
-                {visualization === 'Scatter Plot' && (
-                    <div className="flex">
-                        <Dropdown
-                            value={gene}
-                            onChange={e => setGene(e.value)}
-                            options={availableGenes}
-                            placeholder="Select gene"
-                            className="w-full md:w-14rem"
-                        />
-                    </div>
-                )}
-            </div>
-            <div className="flex flex-col flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 items-center">
-                {visualization === 'Scatter Plot' ? (
-                    <DotPlot data={plotData[gene]} gene={gene} width={1000} height={1000} />
-                ) : (
-                    <Heatmap data={plotData} width={1000} height={500} />
-                )}
             </div>
         </div>
     );
