@@ -1,12 +1,37 @@
 import React, { useState } from 'react';
 import { Dropdown } from 'primereact/dropdown';
-import { InputSwitch } from 'primereact/inputswitch';
 import { Hospital, Microscope } from 'lucide-react';
+import GeneExpressionDotPlot, { type DotPlotDataPoint } from '../components/GeneExpressionDotPlot';
+
+// ── Dummy ATRX expression data (matches the reference image) ────────────────
+const ATRX_DATA: DotPlotDataPoint[] = [
+    { cellLine: 'Rh41', geneExpression: 7.1, tissue: 'Soft Tissue' },
+    { cellLine: 'Hs 729.T', geneExpression: 7.24, tissue: 'Soft Tissue' },
+    { cellLine: 'GCT', geneExpression: 7.73, tissue: 'Soft Tissue' },
+    { cellLine: 'Rh30', geneExpression: 7.93, tissue: 'Soft Tissue' },
+    { cellLine: 'HT-1080', geneExpression: 7.97, tissue: 'Soft Tissue' },
+    { cellLine: 'MES-SA', geneExpression: 8.16, tissue: 'Uterus' },
+    { cellLine: 'RKN', geneExpression: 8.22, tissue: 'Soft Tissue' },
+    { cellLine: 'RD', geneExpression: 8.26, tissue: 'Soft Tissue' },
+    { cellLine: 'TE 159.T', geneExpression: 8.3, tissue: 'Soft Tissue' },
+    { cellLine: 'TE 125.T', geneExpression: 8.33, tissue: 'Soft Tissue' },
+    { cellLine: 'Rh18', geneExpression: 8.34, tissue: 'Soft Tissue' },
+    { cellLine: 'TE 441.T', geneExpression: 8.49, tissue: 'Soft Tissue' },
+    { cellLine: 'TE 617.T', geneExpression: 8.54, tissue: 'Soft Tissue' },
+    { cellLine: 'ESS-1', geneExpression: 8.65, tissue: 'Uterus' },
+    { cellLine: 'A-204', geneExpression: 8.7, tissue: 'Soft Tissue' },
+    { cellLine: 'KYM-1', geneExpression: 8.96, tissue: 'Soft Tissue' },
+    { cellLine: 'SK-UT-1', geneExpression: 9.08, tissue: 'Uterus' },
+    { cellLine: 'SK-LMS-1', geneExpression: 9.18, tissue: 'Soft Tissue' }
+];
 
 const Visualizations: React.FC = () => {
     const [clinical, setClinical] = useState(false);
     const [dataset, setDataset] = useState(null);
-    const [clinicalDatasets, setClinicalDatasets] = useState<Object[]>([
+    const [availableVisualizations, setAvailableVisualizations] = useState(['Scatter Plot', 'Heatmap']);
+    const [visualization, setVisualization] = useState('Scatter Plot');
+
+    const [clinicalDatasets] = useState<Object[]>([
         {
             name: 'TCGA',
             id: 1,
@@ -32,6 +57,7 @@ const Visualizations: React.FC = () => {
             layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
         }
     ]);
+
     const [preclinicalDatasets, setPreclinicalDatasets] = useState<Object[]>([
         {
             name: 'CCLE',
@@ -83,7 +109,7 @@ const Visualizations: React.FC = () => {
         }
     ]);
 
-    const [datasetLayers, setDatasetLayers] = useState<String[]>([
+    const [availableLayers, setAvailableLayers] = useState<String[]>([
         'Treatment Response',
         'RNA-seq',
         'Microarray',
@@ -92,9 +118,12 @@ const Visualizations: React.FC = () => {
         'Methylation',
         'RPPA'
     ]);
+    const [layer, setLayer] = useState<String>('RNA-seq');
+    const [availableGenes, setAvailableGenes] = useState<string[]>(['TP53', 'ATRX', 'RB1']);
+    const [gene, setGene] = useState<string>('ATRX');
 
     return (
-        <div className={`flex flex-row bg-background h-screen justify-center items-center px-10`}>
+        <div className={`flex flex-row gap-4 bg-background min-h-screen justify-center items-start px-10 py-10`}>
             <div className="flex flex-col min-w-75 max-w-lg gap-4 bg-white p-4 rounded-md shadow-card border border-border/75">
                 <div className="flex flex-row">
                     <div className="flex flex-row gap-4 justify-center">
@@ -136,9 +165,19 @@ const Visualizations: React.FC = () => {
                 </div>
                 <div className="flex">
                     <Dropdown
-                        value={dataset}
-                        onChange={e => setDataset(e.value)}
-                        options={datasetLayers}
+                        value={visualization}
+                        onChange={e => setVisualization(e.value)}
+                        options={availableVisualizations}
+                        optionLabel="name"
+                        placeholder="Select a visualization"
+                        className="w-full md:w-14rem"
+                    />
+                </div>
+                <div className="flex">
+                    <Dropdown
+                        value={layer}
+                        onChange={e => setLayer(e.value)}
+                        options={availableLayers}
                         optionLabel="name"
                         placeholder="Select a molecular profile"
                         className="w-full md:w-14rem"
@@ -146,16 +185,18 @@ const Visualizations: React.FC = () => {
                 </div>
                 <div className="flex">
                     <Dropdown
-                        value={dataset}
-                        onChange={e => setDataset(e.value)}
-                        options={datasetLayers}
+                        value={gene}
+                        onChange={e => setGene(e.value)}
+                        options={availableGenes}
                         optionLabel="name"
-                        placeholder="Select a molecular profile"
+                        placeholder="Select gene"
                         className="w-full md:w-14rem"
                     />
                 </div>
             </div>
-            <div className="flex flex-col bg-white"></div>
+            <div className="flex flex-col flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 items-center">
+                <GeneExpressionDotPlot data={ATRX_DATA} gene="ATRX" width={1000} height={1000} />
+            </div>
         </div>
     );
 };
