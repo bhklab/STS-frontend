@@ -82,9 +82,20 @@ const Visualizations: React.FC = () => {
             layers: ['Microarray', 'miRNA']
         }
     ]);
+
+    const [datasetLayers, setDatasetLayers] = useState<String[]>([
+        'Treatment Response',
+        'RNA-seq',
+        'Microarray',
+        'Mutation',
+        'Copy Number Variation',
+        'Methylation',
+        'RPPA'
+    ]);
+
     return (
         <div className={`flex flex-row bg-background h-screen justify-center items-center px-10`}>
-            <div className="flex flex-col max-w-lg gap-4 bg-white p-4 rounded-md shadow-card border border-border/75">
+            <div className="flex flex-col min-w-75 max-w-lg gap-4 bg-white p-4 rounded-md shadow-card border border-border/75">
                 <div className="flex flex-row">
                     <div className="flex flex-row gap-4 justify-center">
                         <div
@@ -102,7 +113,7 @@ const Visualizations: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className="card flex justify-content-center">
+                <div className="flex">
                     {clinical ? (
                         <Dropdown
                             value={dataset}
@@ -122,6 +133,26 @@ const Visualizations: React.FC = () => {
                             className="w-full md:w-14rem"
                         />
                     )}
+                </div>
+                <div className="flex">
+                    <Dropdown
+                        value={dataset}
+                        onChange={e => setDataset(e.value)}
+                        options={datasetLayers}
+                        optionLabel="name"
+                        placeholder="Select a molecular profile"
+                        className="w-full md:w-14rem"
+                    />
+                </div>
+                <div className="flex">
+                    <Dropdown
+                        value={dataset}
+                        onChange={e => setDataset(e.value)}
+                        options={datasetLayers}
+                        optionLabel="name"
+                        placeholder="Select a molecular profile"
+                        className="w-full md:w-14rem"
+                    />
                 </div>
             </div>
             <div className="flex flex-col bg-white"></div>
