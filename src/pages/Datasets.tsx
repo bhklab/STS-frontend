@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Chart } from 'primereact/chart';
 
 const Datasets: React.FC = () => {
+    const [barChartData, setBarChartData] = useState({});
+    const [barChartOptions, setBarChartOptions] = useState({});
+
     const clinical_datasets = [
         {
             name: 'TCGA',
@@ -136,19 +139,89 @@ const Datasets: React.FC = () => {
         ]
     };
 
+    useEffect(() => {
+        const documentStyle = getComputedStyle(document.documentElement);
+        const textColor = documentStyle.getPropertyValue('--text-color');
+        const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
+        const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+        const data = {
+            labels: ['Samples', 'Genes', 'Drugs', 'Cell Lines'],
+            datasets: [
+                {
+                    type: 'bar',
+                    label: 'TCGA',
+                    backgroundColor: documentStyle.getPropertyValue('--blue-500'),
+                    data: [50, 25, 12, 48]
+                },
+                {
+                    type: 'bar',
+                    label: 'German',
+                    backgroundColor: documentStyle.getPropertyValue('--green-500'),
+                    data: [21, 84, 24, 75]
+                },
+                {
+                    type: 'bar',
+                    label: 'Hemming',
+                    backgroundColor: documentStyle.getPropertyValue('--yellow-500'),
+                    data: [41, 52, 24, 74]
+                }
+            ]
+        };
+        const options = {
+            maintainAspectRatio: false,
+            aspectRatio: 0.8,
+            plugins: {
+                tooltips: {
+                    mode: 'index',
+                    intersect: false
+                },
+                legend: {
+                    labels: {
+                        color: textColor
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    ticks: {
+                        color: textColorSecondary
+                    },
+                    grid: {
+                        color: surfaceBorder
+                    }
+                },
+                y: {
+                    stacked: true,
+                    ticks: {
+                        color: textColorSecondary
+                    },
+                    grid: {
+                        color: surfaceBorder
+                    }
+                }
+            }
+        };
+
+        setBarChartData(data);
+        setBarChartOptions(options);
+    }, []);
+
     return (
         <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10 py-10">
             <div className="flex flex-row gap-20 items-center justify-center w-full">
-                <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center ">
+                <div className="w-full max-w-5xl flex flex-col gap-2 items-center justify-center">
+                    <Chart type="bar" data={barChartData} options={barChartOptions} className="w-full min-h-[800px]" />
+                </div>
+                <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center">
                     <h2 className="text-headingMd text-text-secon"> Preclinical Statistics</h2>
                     <Chart type="pie" data={pre_clinical_chart_data} className="w-full" />
                 </div>
-                <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center ">
+                <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center">
                     <h2 className="text-headingMd text-text-primary"> Clinical Statistics</h2>
                     <Chart type="pie" data={clinical_chart_data} className="w-full" />
                 </div>
             </div>
-
             <div className="flex flex-col gap-4 w-full">
                 <h1 className="text-heading2Xl font-semibold text-text-primary text-left">Preclinical Datasets</h1>
                 <DataTable
