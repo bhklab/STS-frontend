@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { Image } from 'primereact/image';
+import React, { useEffect } from 'react';
 
 type SectionProps = {
     scrollTarget?: string | null;

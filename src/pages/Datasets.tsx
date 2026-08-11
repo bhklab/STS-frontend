@@ -211,7 +211,7 @@ const Datasets: React.FC = () => {
         <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10 py-10">
             <div className="flex flex-row gap-20 items-center justify-center w-full">
                 <div className="w-full max-w-5xl flex flex-col gap-2 items-center justify-center">
-                    <Chart type="bar" data={barChartData} options={barChartOptions} className="w-full min-h-[800px]" />
+                    <Chart type="bar" data={barChartData} options={barChartOptions} className="w-full" />
                 </div>
                 <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center">
                     <h2 className="text-headingMd text-text-secon"> Preclinical Statistics</h2>

@@ -124,11 +124,14 @@ const Home: React.FC = () => {
                     <div className="flex flex-col gap-6 justify-center max-w-2/3">
                         <div className="flex flex-col gap-1">
                             <h1 className="text-7xl font-semibold  text-primary">
-                                Explore Our Rich Sarcoma Data Collection
+                                Explore The Sarcoma Data Collection
                             </h1>
                             <p className="text-headingXl text-text-primary font-light">
-                                Get access to our clinical and preclinical collections of curated small tissue sarcoma
-                                datasets alongside advanced analytics & predictive tools.
+                                Get access to clinical and preclinical collections of{' '}
+                                <span className="font-semibold text-soft-tissue">soft tissue sarcoma</span> and{' '}
+                                <span className="font-semibold text-uterus">uterine datasets</span> alongside{' '}
+                                <span className="font-semibold text-secondary">advanced analytics</span> and{' '}
+                                <span className="font-semibold text-secondary">predictive tools</span>.
                             </p>
                         </div>
                         <button
