@@ -1,14 +1,14 @@
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 
-export interface DotPlotDataPoint {
+export interface PlotDataPoint {
     cellLine: string;
-    geneExpression: number;
+    value: number;
     tissue: string;
 }
 
-interface GeneExpressionDotPlotProps {
-    data: DotPlotDataPoint[];
+interface DotPlotProps {
+    data: PlotDataPoint[];
     gene: string;
     width?: number;
     height?: number;
@@ -21,7 +21,7 @@ const TISSUE_COLORS: Record<string, string> = {
 
 const DEFAULT_COLOR = '#999999';
 
-const GeneExpressionDotPlot: React.FC<GeneExpressionDotPlotProps> = ({ data, gene, width = 1000, height = 1000 }) => {
+const DotPlot: React.FC<DotPlotProps> = ({ data, gene, width = 1000, height = 1000 }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
 
     useEffect(() => {
@@ -33,7 +33,7 @@ const GeneExpressionDotPlot: React.FC<GeneExpressionDotPlotProps> = ({ data, gen
         const innerH = height - margin.top - margin.bottom;
 
         // Sort data by ascending expression
-        const sorted = [...data].sort((a, b) => a.geneExpression - b.geneExpression);
+        const sorted = [...data].sort((a, b) => a.value - b.value);
 
         // Scales
         const xScale = d3
@@ -42,7 +42,7 @@ const GeneExpressionDotPlot: React.FC<GeneExpressionDotPlotProps> = ({ data, gen
             .range([0, innerW])
             .padding(0.4);
 
-        const yExtent = d3.extent(sorted, d => d.geneExpression) as [number, number];
+        const yExtent = d3.extent(sorted, d => d.value) as [number, number];
         const yPadding = (yExtent[1] - yExtent[0]) * 0.1;
 
         const yScale = d3
@@ -93,7 +93,7 @@ const GeneExpressionDotPlot: React.FC<GeneExpressionDotPlotProps> = ({ data, gen
             .attr('fill', '#1f2937')
             .attr('font-size', '13px')
             .attr('font-weight', '500')
-            .text('Gene expression');
+            .text('Value');
 
         // X axis
         const xAxis = g.append('g').attr('transform', `translate(0,${innerH})`).call(d3.axisBottom(xScale));
@@ -116,7 +116,7 @@ const GeneExpressionDotPlot: React.FC<GeneExpressionDotPlotProps> = ({ data, gen
             .append('circle')
             .attr('class', 'dot')
             .attr('cx', d => (xScale(d.cellLine) ?? 0) + xScale.bandwidth() / 2)
-            .attr('cy', d => yScale(d.geneExpression))
+            .attr('cy', d => yScale(d.value))
             .attr('r', 0)
             .attr('fill', d => TISSUE_COLORS[d.tissue] ?? DEFAULT_COLOR)
             .attr('opacity', 0.85)
@@ -146,15 +146,13 @@ const GeneExpressionDotPlot: React.FC<GeneExpressionDotPlotProps> = ({ data, gen
             .append('circle')
             .attr('class', 'dot-hover')
             .attr('cx', d => (xScale(d.cellLine) ?? 0) + xScale.bandwidth() / 2)
-            .attr('cy', d => yScale(d.geneExpression))
+            .attr('cy', d => yScale(d.value))
             .attr('r', 12)
             .attr('fill', 'transparent')
             .style('cursor', 'pointer')
             .on('mouseenter', (event, d) => {
                 tooltip
-                    .html(
-                        `<strong>${d.cellLine}</strong><br/>Expression: ${d.geneExpression.toFixed(2)}<br/>Tissue: ${d.tissue}`
-                    )
+                    .html(`<strong>${d.cellLine}</strong><br/>Value: ${d.value.toFixed(2)}<br/>Tissue: ${d.tissue}`)
                     .style('opacity', '1');
             })
             .on('mousemove', event => {
@@ -212,4 +210,4 @@ const GeneExpressionDotPlot: React.FC<GeneExpressionDotPlotProps> = ({ data, gen
     );
 };
 
-export default GeneExpressionDotPlot;
+export default DotPlot;
