@@ -124,7 +124,7 @@ const Home: React.FC = () => {
                     <div className="flex flex-col gap-6 justify-center max-w-2/3">
                         <div className="flex flex-col gap-1">
                             <h1 className="text-7xl font-semibold  text-primary">
-                                Explore The Sarcoma Data Collection
+                                Explore The Soft Tissue Sarcoma Data Collection
                             </h1>
                             <p className="text-headingXl text-text-primary font-light">
                                 Get access to clinical and preclinical collections of{' '}
