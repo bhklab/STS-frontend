@@ -76,7 +76,7 @@ const Visualizations: React.FC = () => {
     const [availableVisualizations, setAvailableVisualizations] = useState(['Scatter Plot', 'Heatmap']);
     const [visualization, setVisualization] = useState('Scatter Plot');
 
-    const [availableResponseTypes, setAvailableResponseTypes] = useState<String[]>(['AAC', 'AUC', 'IC50']);
+    const [availableResponseTypes, setAvailableResponseTypes] = useState<String[]>(['AAC']);
     const [responseType, setResponseType] = useState<String | null>(null);
 
     const [clinicalDatasets] = useState<Object[]>([
