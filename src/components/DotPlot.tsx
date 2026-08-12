@@ -163,7 +163,9 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, gene }) => {
             .style('cursor', 'pointer')
             .on('mouseenter', (_event, d) => {
                 tooltip
-                    .html(`<strong>${d.cellLine}</strong><br/>Value: ${d.value.toFixed(2)}<br/>Tissue: ${d.tissue}`)
+                    .html(
+                        `<strong>Gene: </strong>${gene}<br/><strong>Cell Line: </strong>${d.cellLine}<br/><strong>Value: </strong>${d.value.toFixed(2)}<br/><strong>Tissue: </strong>${d.tissue}`
+                    )
                     .style('opacity', '1');
             })
             .on('mousemove', event => {

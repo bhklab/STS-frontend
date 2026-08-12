@@ -62,7 +62,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
         const colorScale = d3
             .scaleSequential()
             .domain(extent)
-            .interpolator(d3.interpolateRgbBasis(['#e6f2f7', '#006494', '#1f2937']));
+            .interpolator(d3.interpolateRgbBasis(['#03158c', '#ffffff', '#800b00']));
 
         // Clear and set up SVG
         const svg = d3.select(svgRef.current);
@@ -153,7 +153,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
             .on('mouseenter', (_event, d) => {
                 tooltip
                     .html(
-                        `<strong>Gene: ${d.gene}</strong><br/>Cell Line: ${d.cellLine}<br/>Value: ${d.value.toFixed(2)}<br/>Tissue: ${d.tissue}`
+                        `<strong>Gene: </strong>${d.gene}<br/><strong>Cell Line: </strong>${d.cellLine}<br/><strong>Value: </strong>${d.value.toFixed(2)}<br/><strong>Tissue: </strong>${d.tissue}`
                     )
                     .style('opacity', '1');
             })
