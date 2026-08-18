@@ -1,11 +1,11 @@
 import React from 'react';
 
-const Analysis: React.FC = () => {
+const Analyses: React.FC = () => {
     return (
         <div className="flex flex-col bg-background h-screen justify-center items-center">
-            <h1 className="text-heading6Xl text-subsection-3">Coming Soon!</h1>
+            <h1 className="font-light text-text-primary">404 Not Found | Coming Soon!</h1>
         </div>
     );
 };
 
-export default Analysis;
+export default Analyses;
