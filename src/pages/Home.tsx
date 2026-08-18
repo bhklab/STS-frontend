@@ -150,14 +150,14 @@ const Home: React.FC = () => {
 
     return (
         <div className="flex flex-col bg-background min-h-[95vh] justify-center items-center">
-            <div className="flex flex-col justify-center items-center w-full px-24 py-20">
-                <div className="flex flex-row md:flex-col gap-6 items-baseline">
-                    <div className="flex flex-col gap-6 justify-center flex-1 max-w-full">
+            <div className="flex flex-col justify-center items-center w-full px-24 py-20 max-w-[2200px]">
+                <div className="flex flex-row md:flex-col gap-32 items-baseline mb-40">
+                    <div className="flex flex-col gap-6 justify-center flex-1 w-full">
                         <div className="flex flex-col gap-1">
-                            <h1 className="text-6xl font-semibold text-primary">
+                            <h1 className="text-7xl font-semibold text-primary">
                                 Soft Tissue Sarcoma Integrated Research Platform
                             </h1>
-                            <p className="text-headingXl text-text-primary">
+                            <p className="text-headingXl font-light text-text-primary">
                                 Integrating clinical and preclinical data with translational analytics and agentic
                                 AI–enabled workflows.
                             </p>
@@ -176,7 +176,7 @@ const Home: React.FC = () => {
                             <span className="text-headingMd font-light">View Datasets</span>
                         </button>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-1 gap-4 flex-1 max-w-4/10 md:w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-1 gap-4 flex-1 w-full">
                         {platformFeatures.map((feature, idx) => {
                             const Icon = feature.icon;
                             return (
@@ -190,7 +190,7 @@ const Home: React.FC = () => {
                                         >
                                             <Icon className="w-5 h-5 shrink-0" />
                                         </div>
-                                        <h2 className="font-semibold text-headingLg text-text-primary">
+                                        <h2 className="font-semibold text-headingLg text-text-primary text-wrap overflow-hidden">
                                             {feature.title}
                                         </h2>
                                     </div>
@@ -202,58 +202,56 @@ const Home: React.FC = () => {
                         })}
                     </div>
                 </div>
-                <div className="flex flex-wrap justify-center items-center max-w-7xl w-full gap-4 absolute bottom-8">
+                <div className="flex flex-wrap justify-center items-center max-w-[1000px] w-full gap-4 absolute bottom-8 md:static md:bottom-3">
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading3Xl font-bold text-blue-600 tracking-tight">
+                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
                             <AnimatedCounter end={clinical_datasets.length} duration={1200} />
                         </span>
-                        <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
+                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
                             Clinical Datasets
                         </span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading3Xl font-bold text-blue-600 tracking-tight">
+                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
                             <AnimatedCounter end={preclinical_datasets.length} duration={1300} />
                         </span>
-                        <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
+                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
                             Preclinical Datasets
                         </span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading3Xl font-bold text-orange-600 tracking-tight">
+                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
                             <AnimatedCounter end={60} duration={1800} />
                         </span>
-                        <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
+                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
                             Clinical Samples
                         </span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading3Xl font-bold text-orange-600 tracking-tight">
+                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
                             <AnimatedCounter end={200} duration={2200} />
                         </span>
-                        <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
+                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
                             Preclinical Samples
                         </span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading3Xl font-bold text-green-600 tracking-tight">
+                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
                             <AnimatedCounter end={200} duration={2200} />
                         </span>
-                        <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">Drugs</span>
+                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Drugs</span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading3Xl font-bold text-green-600 tracking-tight">
+                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
                             <AnimatedCounter end={200} duration={2200} />
                         </span>
-                        <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
-                            Cell Lines
-                        </span>
+                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Cell Lines</span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading3Xl font-bold text-amber-600 tracking-tight">
+                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
                             <AnimatedCounter end={8} duration={1400} />
                         </span>
-                        <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
+                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
                             Unique Data Layers
                         </span>
                     </div>
