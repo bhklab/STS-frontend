@@ -15,8 +15,10 @@ const Navbar: React.FC = () => {
 
     const navItems = [
         { label: 'Visualizations', path: '/visualizations' },
-        { label: 'Analysis', path: '/analysis' },
+        { label: 'Analyses', path: '/analyses' },
         { label: 'Datasets', path: '/datasets' },
+        { label: 'AI Assistant', path: '/ai-assistant' },
+        { label: 'Help', path: '/help' },
         { label: 'About', path: '/about' }
     ];
 
