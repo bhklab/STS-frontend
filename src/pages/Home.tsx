@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { HardDrive, ChartLine, BotMessageSquare, CodeXml } from 'lucide-react';
 
 interface AnimatedCounterProps {
     end: number;
@@ -114,25 +115,59 @@ const preclinical_datasets = [
     }
 ];
 
+const platformFeatures = [
+    {
+        icon: HardDrive,
+        title: 'Integrated Data',
+        description:
+            'Clinical, molecular, imaging, pathology, and pharmacogenomic resources across patients and preclinical models',
+        badgeClass: 'bg-blue-50 text-blue-700 border-blue-200/80'
+    },
+    {
+        icon: ChartLine,
+        title: 'Translational Analytics',
+        description: 'Cohort, genomic, survival, drug-response, biomarker, and cross-cohort analyses',
+        badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+    },
+    {
+        icon: BotMessageSquare,
+        title: 'Agentic AI',
+        description:
+            'Governed AI-enabled workflows for data exploration, analysis orchestration, evidence synthesis, and hypothesis generation',
+        badgeClass: 'bg-purple-50 text-purple-700 border-purple-200/80'
+    },
+    {
+        icon: CodeXml,
+        title: 'FAIR & Reproducible Research',
+        description:
+            'Harmonized metadata, standardized identifiers, provenance, controlled access, and reproducible workflows',
+        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/80'
+    }
+];
+
 const Home: React.FC = () => {
     const navigate = useNavigate();
 
     return (
         <div className="flex flex-col bg-background min-h-[95vh] justify-center items-center">
             <div className="flex flex-col justify-center items-center w-full px-24 py-20">
-                <div className="flex flex-row gap-6 items-center">
-                    <div className="flex flex-col gap-6 justify-center max-w-2/3">
+                <div className="flex flex-row md:flex-col gap-6 items-baseline">
+                    <div className="flex flex-col gap-6 justify-center flex-1 max-w-full">
                         <div className="flex flex-col gap-1">
-                            <h1 className="text-7xl font-semibold  text-primary">
-                                Explore The Soft Tissue Sarcoma Data Collection
+                            <h1 className="text-6xl font-semibold text-primary">
+                                Soft Tissue Sarcoma Integrated Research Platform
                             </h1>
-                            <p className="text-headingXl text-text-primary font-light">
-                                Get access to clinical and preclinical collections of{' '}
-                                <span className="font-semibold text-soft-tissue">soft tissue sarcoma</span> and{' '}
-                                <span className="font-semibold text-uterus">uterine datasets</span> alongside{' '}
-                                <span className="font-semibold text-secondary">advanced analytics</span> and{' '}
-                                <span className="font-semibold text-secondary">predictive tools</span>.
+                            <p className="text-headingXl text-text-primary">
+                                Integrating clinical and preclinical data with translational analytics and agentic
+                                AI–enabled workflows.
                             </p>
+                            {/* <p className="text-headingXs text-text-secondary font-light italic">
+                                The Soft Tissue Sarcoma Integrated Research Platform provides a harmonized environment
+                                for exploring clinical, molecular, pharmacogenomic, imaging, and pathology data across
+                                patient cohorts and preclinical models. The platform supports interactive analysis,
+                                cross-cohort investigation, biomarker discovery, and the future integration of governed
+                                agentic AI workflows for translational sarcoma research.
+                            </p> */}
                         </div>
                         <button
                             className="flex flex-row items-center justify-center w-48 gap-2 text-white bg-primary py-3 px-5 rounded-md hover:cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl"
@@ -141,7 +176,31 @@ const Home: React.FC = () => {
                             <span className="text-headingMd font-light">View Datasets</span>
                         </button>
                     </div>
-                    <div className="flex flex-row max-w-1/3"></div>
+                    <div className="grid grid-cols-2 sm:grid-cols-1 gap-4 flex-1 max-w-4/10 md:w-full">
+                        {platformFeatures.map((feature, idx) => {
+                            const Icon = feature.icon;
+                            return (
+                                <div
+                                    key={idx}
+                                    className="flex flex-col gap-3 p-5 bg-white shadow-md hover:shadow-md rounded-xl border border-border transition-all duration-300 ease-out hover:-translate-y-0.5"
+                                >
+                                    <div className="flex flex-row items-center gap-3">
+                                        <div
+                                            className={`flex items-center justify-center p-2 rounded-lg border ${feature.badgeClass}`}
+                                        >
+                                            <Icon className="w-5 h-5 shrink-0" />
+                                        </div>
+                                        <h2 className="font-semibold text-headingLg text-text-primary">
+                                            {feature.title}
+                                        </h2>
+                                    </div>
+                                    <p className="text-text-secondary text-bodyMd leading-relaxed">
+                                        {feature.description}
+                                    </p>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
                 <div className="flex flex-wrap justify-center items-center max-w-7xl w-full gap-4 absolute bottom-8">
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
@@ -153,7 +212,7 @@ const Home: React.FC = () => {
                         </span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading3Xl font-bold text-cyan-700 tracking-tight">
+                        <span className="text-heading3Xl font-bold text-blue-600 tracking-tight">
                             <AnimatedCounter end={preclinical_datasets.length} duration={1300} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
@@ -161,7 +220,7 @@ const Home: React.FC = () => {
                         </span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading3Xl font-bold text-rose-600 tracking-tight">
+                        <span className="text-heading3Xl font-bold text-orange-600 tracking-tight">
                             <AnimatedCounter end={60} duration={1800} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
@@ -176,8 +235,22 @@ const Home: React.FC = () => {
                             Preclinical Samples
                         </span>
                     </div>
-                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
+                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
                         <span className="text-heading3Xl font-bold text-green-600 tracking-tight">
+                            <AnimatedCounter end={200} duration={2200} />
+                        </span>
+                        <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">Drugs</span>
+                    </div>
+                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
+                        <span className="text-heading3Xl font-bold text-green-600 tracking-tight">
+                            <AnimatedCounter end={200} duration={2200} />
+                        </span>
+                        <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
+                            Cell Lines
+                        </span>
+                    </div>
+                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
+                        <span className="text-heading3Xl font-bold text-amber-600 tracking-tight">
                             <AnimatedCounter end={8} duration={1400} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-secondary whitespace-nowrap">
