@@ -154,10 +154,10 @@ const Home: React.FC = () => {
                 <div className="flex flex-row md:flex-col gap-32 items-baseline mb-40">
                     <div className="flex flex-col gap-6 justify-center flex-1 w-full">
                         <div className="flex flex-col gap-1">
-                            <h1 className="text-7xl font-semibold text-primary">
+                            <h1 className="text-6xl font-semibold text-primary">
                                 Soft Tissue Sarcoma Integrated Research Platform
                             </h1>
-                            <p className="text-headingXl font-light text-text-primary">
+                            <p className="text-headingLg font-light text-text-primary">
                                 Integrating clinical and preclinical data with translational analytics and agentic
                                 AI–enabled workflows.
                             </p>

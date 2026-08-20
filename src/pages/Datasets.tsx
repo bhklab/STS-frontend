@@ -43,7 +43,7 @@ const Datasets: React.FC = () => {
             version: '2019',
             layers: [
                 'Treatment Response',
-                'RNA-seq',
+                'RNAseq',
                 'Microarray',
                 'Mutation',
                 'Copy Number Variation',
@@ -57,7 +57,7 @@ const Datasets: React.FC = () => {
             description:
                 'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
             version: '2020',
-            layers: ['RNA-seq', 'Microarray', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
+            layers: ['RNAseq', 'Microarray', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
         },
         {
             name: 'CTRP',
@@ -73,7 +73,7 @@ const Datasets: React.FC = () => {
             description:
                 'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
             version: '2019',
-            layers: ['RNA-seq', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
+            layers: ['RNAseq', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
         },
         {
             name: 'NCI Sarcoma',
@@ -86,7 +86,7 @@ const Datasets: React.FC = () => {
     ];
 
     const pre_clinical_chart_data = {
-        labels: preclinical_datasets.map(dataset => dataset.name), // ['CCLE', 'GDSC', 'CTRP', 'gCSI', 'NCI Sarcoma']
+        labels: preclinical_datasets.map(dataset => dataset.name),
         datasets: [
             {
                 label: 'Samples',
@@ -116,7 +116,7 @@ const Datasets: React.FC = () => {
     };
 
     const clinical_chart_data = {
-        labels: clinical_datasets.map(dataset => dataset.name), // ['CCLE', 'GDSC', 'CTRP', 'gCSI', 'NCI Sarcoma']
+        labels: clinical_datasets.map(dataset => dataset.name),
         datasets: [
             {
                 label: 'Samples',

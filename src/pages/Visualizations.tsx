@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Hospital, Microscope } from 'lucide-react';
 import DotPlot, { type PlotDataPoint } from '../components/DotPlot';
 import Heatmap from '../components/Heatmap';
 import { Tooltip } from 'primereact/tooltip';
+import axios from 'axios';
 
 // Dummy data for multiple genes
 const plotData: Record<string, PlotDataPoint[]> = {
@@ -69,106 +70,67 @@ const plotData: Record<string, PlotDataPoint[]> = {
     ]
 };
 
+interface Dataset {
+    id: number;
+    name: string;
+    clinical: boolean;
+    description?: string;
+    version?: string;
+    layers?: string[];
+}
+
 const Visualizations: React.FC = () => {
     const [clinical, setClinical] = useState(false);
-    const [dataset, setDataset] = useState(null);
+    const [dataset, setDataset] = useState<Dataset | null>(null);
+    const [preclinicalDatasets, setPreclinicalDatasets] = useState<Dataset[]>([]);
+    const [clinicalDatasets, setClinicalDatasets] = useState<Dataset[]>([]);
 
-    const [availableVisualizations, setAvailableVisualizations] = useState(['Scatter Plot', 'Heatmap']);
+    const [availableVisualizations, setAvailableVisualizations] = useState<String[]>(['Scatter Plot', 'Heatmap']);
     const [visualization, setVisualization] = useState('Scatter Plot');
 
+    // Data layer state
+    const [availableLayers, setAvailableLayers] = useState<String[]>([]);
+    const [layer, setLayer] = useState<String>('RNA-seq');
+
+    // Response type state
     const [availableResponseTypes, setAvailableResponseTypes] = useState<String[]>(['AAC']);
     const [responseType, setResponseType] = useState<String | null>(null);
 
-    const [clinicalDatasets] = useState<Object[]>([
-        {
-            name: 'TCGA',
-            id: 1,
-            description:
-                'TCGA Sarcoma is described as a multi-platform molecular landscape of 206 adult soft tissue sarcomas representing 6 major types. Along with novel insights into the biology of individual sarcoma types, we report three overarching findings: 1) unlike most epithelial malignancies, these sarcomas (excepting synovial sarcoma) are characterized predominantly by copy number changes, with low mutational loads and only a few genes (TP53, ATRX, RB1) highly recurrently mutated across sarcoma types, 2) within sarcoma types, genomic and regulomic diversity of driver pathways defines molecular subtypes associated with patient outcome, and 3) the immune microenvironment, inferred from DNA methylation and mRNA profiles, associates with outcome and may inform clinical trials of immune checkpoint inhibitors.',
-            version: '2017',
-            layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
-        },
-        {
-            name: 'German',
-            id: 2,
-            description:
-                'TCGA Sarcoma is described as a multi-platform molecular landscape of 206 adult soft tissue sarcomas representing 6 major types. Along with novel insights into the biology of individual sarcoma types, we report three overarching findings: 1) unlike most epithelial malignancies, these sarcomas (excepting synovial sarcoma) are characterized predominantly by copy number changes, with low mutational loads and only a few genes (TP53, ATRX, RB1) highly recurrently mutated across sarcoma types, 2) within sarcoma types, genomic and regulomic diversity of driver pathways defines molecular subtypes associated with patient outcome, and 3) the immune microenvironment, inferred from DNA methylation and mRNA profiles, associates with outcome and may inform clinical trials of immune checkpoint inhibitors.',
-            version: '2017',
-            layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
-        },
-        {
-            name: 'Hemming',
-            id: 3,
-            description:
-                'TCGA Sarcoma is described as a multi-platform molecular landscape of 206 adult soft tissue sarcomas representing 6 major types. Along with novel insights into the biology of individual sarcoma types, we report three overarching findings: 1) unlike most epithelial malignancies, these sarcomas (excepting synovial sarcoma) are characterized predominantly by copy number changes, with low mutational loads and only a few genes (TP53, ATRX, RB1) highly recurrently mutated across sarcoma types, 2) within sarcoma types, genomic and regulomic diversity of driver pathways defines molecular subtypes associated with patient outcome, and 3) the immune microenvironment, inferred from DNA methylation and mRNA profiles, associates with outcome and may inform clinical trials of immune checkpoint inhibitors.',
-            version: '2017',
-            layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
-        }
-    ]);
+    // Gene state
+    const [availableGenes, setAvailableGenes] = useState<string[]>([]);
+    const [genes, setGenes] = useState<string[]>([]);
 
-    const [preclinicalDatasets, setPreclinicalDatasets] = useState<Object[]>([
-        {
-            name: 'CCLE',
-            id: 1,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2019',
-            layers: [
-                'Treatment Response',
-                'RNA-seq',
-                'Microarray',
-                'Mutation',
-                'Copy Number Variation',
-                'Methylation',
-                'RPPA'
-            ]
-        },
-        {
-            name: 'GDSC',
-            id: 2,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2020',
-            layers: ['RNA-seq', 'Microarray', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
-        },
-        {
-            name: 'CTRP',
-            id: 3,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2015',
-            layers: ['Treatment Response', 'Mutation', 'Copy Number Variation']
-        },
-        {
-            name: 'gCSI',
-            id: 4,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2019',
-            layers: ['RNA-seq', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
-        },
-        {
-            name: 'NCI Sarcoma',
-            id: 5,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2015',
-            layers: ['Microarray', 'miRNA']
-        }
-    ]);
+    useEffect(() => {
+        const getDatasets = async () => {
+            const res = await axios.get('/api/datasets/all');
+            console.log(res.data);
+            res.data.forEach((dataset: Dataset) => {
+                if (dataset.clinical) {
+                    setClinicalDatasets(prev => [...prev, dataset]);
+                } else {
+                    setPreclinicalDatasets(prev => [...prev, dataset]);
+                }
+            });
+        };
+        getDatasets();
+    }, []);
 
-    const [availableLayers, setAvailableLayers] = useState<String[]>([
-        'Treatment Response',
-        'RNA-seq',
-        'Microarray',
-        'Mutation',
-        'Copy Number Variation',
-        'Methylation',
-        'RPPA'
-    ]);
-    const [layer, setLayer] = useState<String>('RNA-seq');
-    const [availableGenes, setAvailableGenes] = useState<string[]>(['TP53', 'ATRX', 'RB1']);
-    const [gene, setGene] = useState<string>('ATRX');
+    const selectDataset = (dataset: Dataset) => {
+        setDataset(dataset);
+        setAvailableLayers([]);
+        setAvailableGenes([]);
+        getDataLayers(dataset.id);
+    };
+
+    const getDataLayers = async (dataset_id: number) => {
+        const res = await axios.get(`/api/datasets/data-layers`, {
+            params: {
+                dataset_id: dataset_id
+            }
+        });
+        console.log(res.data);
+        setAvailableLayers(res.data);
+    };
 
     return (
         <div className="w-full bg-background px-10 py-10 wrap:py-4">
@@ -214,7 +176,7 @@ const Visualizations: React.FC = () => {
                         ) : (
                             <Dropdown
                                 value={dataset}
-                                onChange={e => setDataset(e.value)}
+                                onChange={e => selectDataset(e.value)}
                                 options={preclinicalDatasets}
                                 optionLabel="name"
                                 placeholder="Select a preclinical dataset"
@@ -254,8 +216,8 @@ const Visualizations: React.FC = () => {
                     {visualization === 'Scatter Plot' && (
                         <div className="flex">
                             <Dropdown
-                                value={gene}
-                                onChange={e => setGene(e.value)}
+                                value={genes}
+                                onChange={e => setGenes(e.value)}
                                 options={availableGenes}
                                 placeholder="Select gene"
                                 className="w-full wrap:w-14rem"
@@ -264,11 +226,9 @@ const Visualizations: React.FC = () => {
                     )}
                 </div>
                 <div className="flex flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 wrap:w-full wrap:flex-0">
-                    {visualization === 'Scatter Plot' ? (
-                        <DotPlot data={plotData[gene]} gene={gene} />
-                    ) : (
-                        <Heatmap data={plotData} />
-                    )}
+                    {visualization === 'Scatter Plot'
+                        ? genes && <DotPlot data={plotData['ATRX']} gene={'ATRX'} />
+                        : genes && <Heatmap data={plotData} />}
                 </div>
             </div>
         </div>
