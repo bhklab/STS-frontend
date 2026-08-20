@@ -4,6 +4,8 @@ import { Hospital, Microscope } from 'lucide-react';
 import DotPlot, { type PlotDataPoint } from '../components/DotPlot';
 import Heatmap from '../components/Heatmap';
 import { Tooltip } from 'primereact/tooltip';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { MultiSelect } from 'primereact/multiselect';
 import axios from 'axios';
 
 // Dummy data for multiple genes
@@ -79,6 +81,11 @@ interface Dataset {
     layers?: string[];
 }
 
+interface Gene {
+    gene_id: string;
+    name: string;
+}
+
 const Visualizations: React.FC = () => {
     const [clinical, setClinical] = useState(false);
     const [dataset, setDataset] = useState<Dataset | null>(null);
@@ -93,17 +100,17 @@ const Visualizations: React.FC = () => {
     const [layer, setLayer] = useState<String>('RNA-seq');
 
     // Response type state
-    const [availableResponseTypes, setAvailableResponseTypes] = useState<String[]>(['AAC']);
+    const [availableResponseTypes, setAvailableResponseTypes] = useState<String[]>(['AAC', 'IC50']);
     const [responseType, setResponseType] = useState<String | null>(null);
 
     // Gene state
-    const [availableGenes, setAvailableGenes] = useState<string[]>([]);
-    const [genes, setGenes] = useState<string[]>([]);
+    const [availableGenes, setAvailableGenes] = useState<Gene[]>([]);
+    const [genes, setGenes] = useState<Gene[]>([]);
+    const [retrievingGenes, setRetrievingGenes] = useState(false);
 
     useEffect(() => {
         const getDatasets = async () => {
             const res = await axios.get('/api/datasets/all');
-            console.log(res.data);
             res.data.forEach((dataset: Dataset) => {
                 if (dataset.clinical) {
                     setClinicalDatasets(prev => [...prev, dataset]);
@@ -111,9 +118,16 @@ const Visualizations: React.FC = () => {
                     setPreclinicalDatasets(prev => [...prev, dataset]);
                 }
             });
+            setDataset(res.data[0]);
         };
         getDatasets();
     }, []);
+
+    useEffect(() => {
+        if (dataset) {
+            getDataLayers(dataset.id);
+        }
+    }, [dataset]);
 
     const selectDataset = (dataset: Dataset) => {
         setDataset(dataset);
@@ -128,8 +142,32 @@ const Visualizations: React.FC = () => {
                 dataset_id: dataset_id
             }
         });
-        console.log(res.data);
+        setAvailableGenes([]);
+        getAvailableGenes(dataset_id, res.data[0]);
         setAvailableLayers(res.data);
+    };
+
+    const selectDataLayer = async (layer: String) => {
+        setLayer(layer);
+        const res = await axios.get(`/api/datasets/genes`, {
+            params: {
+                dataset_id: dataset.id,
+                molecular_profile: layer
+            }
+        });
+        setAvailableGenes(res.data);
+    };
+
+    const getAvailableGenes = async (dataset_id: number, layer: String) => {
+        setRetrievingGenes(true);
+        const res = await axios.get(`/api/datasets/genes`, {
+            params: {
+                dataset_id: dataset_id,
+                molecular_profile: layer
+            }
+        });
+        setAvailableGenes(res.data);
+        setRetrievingGenes(false);
     };
 
     return (
@@ -196,7 +234,7 @@ const Visualizations: React.FC = () => {
                     <div className="flex">
                         <Dropdown
                             value={layer}
-                            onChange={e => setLayer(e.value)}
+                            onChange={e => selectDataLayer(e.value)}
                             options={availableLayers}
                             placeholder="Select a molecular profile"
                             className="w-full wrap:w-14rem"
@@ -213,15 +251,25 @@ const Visualizations: React.FC = () => {
                             />
                         </div>
                     )}
-                    {visualization === 'Scatter Plot' && (
-                        <div className="flex">
-                            <Dropdown
+                    {retrievingGenes === false ? (
+                        <div className="flex max-w-[270px]">
+                            <MultiSelect
                                 value={genes}
                                 onChange={e => setGenes(e.value)}
                                 options={availableGenes}
+                                optionLabel="name"
+                                dataKey="gene_id"
+                                filter
+                                selectionLimit={20}
+                                virtualScrollerOptions={{ itemSize: 40 }}
+                                display="chip"
                                 placeholder="Select gene"
                                 className="w-full wrap:w-14rem"
                             />
+                        </div>
+                    ) : (
+                        <div className="flex flex-row justify-center">
+                            <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" />
                         </div>
                     )}
                 </div>
