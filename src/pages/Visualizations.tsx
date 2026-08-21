@@ -9,68 +9,6 @@ import { MultiSelect } from 'primereact/multiselect';
 import axios from 'axios';
 
 // Dummy data for multiple genes
-const plotData: Record<string, PlotDataPoint[]> = {
-    ATRX: [
-        { cellLine: 'Rh41', value: 7.1, tissue: 'Soft Tissue' },
-        { cellLine: 'Hs 729.T', value: 7.24, tissue: 'Soft Tissue' },
-        { cellLine: 'GCT', value: 7.73, tissue: 'Soft Tissue' },
-        { cellLine: 'Rh30', value: 7.93, tissue: 'Soft Tissue' },
-        { cellLine: 'HT-1080', value: 7.97, tissue: 'Soft Tissue' },
-        { cellLine: 'MES-SA', value: 8.16, tissue: 'Uterus' },
-        { cellLine: 'RKN', value: 8.22, tissue: 'Soft Tissue' },
-        { cellLine: 'RD', value: 8.26, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 159.T', value: 8.3, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 125.T', value: 8.33, tissue: 'Soft Tissue' },
-        { cellLine: 'Rh18', value: 8.34, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 441.T', value: 8.49, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 617.T', value: 8.54, tissue: 'Soft Tissue' },
-        { cellLine: 'ESS-1', value: 8.65, tissue: 'Uterus' },
-        { cellLine: 'A-204', value: 8.7, tissue: 'Soft Tissue' },
-        { cellLine: 'KYM-1', value: 8.96, tissue: 'Soft Tissue' },
-        { cellLine: 'SK-UT-1', value: 9.08, tissue: 'Uterus' },
-        { cellLine: 'SK-LMS-1', value: 9.18, tissue: 'Soft Tissue' }
-    ],
-    TP53: [
-        { cellLine: 'Rh41', value: 5.8, tissue: 'Soft Tissue' },
-        { cellLine: 'Hs 729.T', value: 6.12, tissue: 'Soft Tissue' },
-        { cellLine: 'GCT', value: 6.44, tissue: 'Soft Tissue' },
-        { cellLine: 'Rh30', value: 6.5, tissue: 'Soft Tissue' },
-        { cellLine: 'HT-1080', value: 6.73, tissue: 'Soft Tissue' },
-        { cellLine: 'MES-SA', value: 7.0, tissue: 'Uterus' },
-        { cellLine: 'RKN', value: 7.15, tissue: 'Soft Tissue' },
-        { cellLine: 'RD', value: 7.22, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 159.T', value: 7.35, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 125.T', value: 7.41, tissue: 'Soft Tissue' },
-        { cellLine: 'Rh18', value: 7.48, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 441.T', value: 7.66, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 617.T', value: 7.78, tissue: 'Soft Tissue' },
-        { cellLine: 'ESS-1', value: 7.9, tissue: 'Uterus' },
-        { cellLine: 'A-204', value: 8.05, tissue: 'Soft Tissue' },
-        { cellLine: 'KYM-1', value: 8.22, tissue: 'Soft Tissue' },
-        { cellLine: 'SK-UT-1', value: 8.4, tissue: 'Uterus' },
-        { cellLine: 'SK-LMS-1', value: 8.55, tissue: 'Soft Tissue' }
-    ],
-    RB1: [
-        { cellLine: 'Rh41', value: 6.3, tissue: 'Soft Tissue' },
-        { cellLine: 'Hs 729.T', value: 6.55, tissue: 'Soft Tissue' },
-        { cellLine: 'GCT', value: 6.78, tissue: 'Soft Tissue' },
-        { cellLine: 'Rh30', value: 6.91, tissue: 'Soft Tissue' },
-        { cellLine: 'HT-1080', value: 7.02, tissue: 'Soft Tissue' },
-        { cellLine: 'MES-SA', value: 7.18, tissue: 'Uterus' },
-        { cellLine: 'RKN', value: 7.31, tissue: 'Soft Tissue' },
-        { cellLine: 'RD', value: 7.45, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 159.T', value: 7.53, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 125.T', value: 7.6, tissue: 'Soft Tissue' },
-        { cellLine: 'Rh18', value: 7.72, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 441.T', value: 7.88, tissue: 'Soft Tissue' },
-        { cellLine: 'TE 617.T', value: 7.94, tissue: 'Soft Tissue' },
-        { cellLine: 'ESS-1', value: 8.1, tissue: 'Uterus' },
-        { cellLine: 'A-204', value: 8.25, tissue: 'Soft Tissue' },
-        { cellLine: 'KYM-1', value: 8.38, tissue: 'Soft Tissue' },
-        { cellLine: 'SK-UT-1', value: 8.52, tissue: 'Uterus' },
-        { cellLine: 'SK-LMS-1', value: 8.7, tissue: 'Soft Tissue' }
-    ]
-};
 
 interface Dataset {
     id: number;
@@ -108,6 +46,9 @@ const Visualizations: React.FC = () => {
     const [genes, setGenes] = useState<Gene[]>([]);
     const [retrievingGenes, setRetrievingGenes] = useState(false);
 
+    // Plot Data state
+    const [plotData, setPlotData] = useState<Record<string, PlotDataPoint[]>>({});
+
     useEffect(() => {
         const getDatasets = async () => {
             const res = await axios.get('/api/datasets/all');
@@ -129,7 +70,7 @@ const Visualizations: React.FC = () => {
         }
     }, [dataset]);
 
-    const selectDataset = (dataset: Dataset) => {
+    const selectDataset = async (dataset: Dataset) => {
         setDataset(dataset);
         setAvailableLayers([]);
         setAvailableGenes([]);
@@ -142,7 +83,8 @@ const Visualizations: React.FC = () => {
                 dataset_id: dataset_id
             }
         });
-        setAvailableGenes([]);
+        setGenes([]);
+        setPlotData({});
         getAvailableGenes(dataset_id, res.data[0]);
         setAvailableLayers(res.data);
     };
@@ -155,6 +97,8 @@ const Visualizations: React.FC = () => {
                 molecular_profile: layer
             }
         });
+        setGenes([]);
+        setPlotData({});
         setAvailableGenes(res.data);
     };
 
@@ -168,6 +112,21 @@ const Visualizations: React.FC = () => {
         });
         setAvailableGenes(res.data);
         setRetrievingGenes(false);
+    };
+
+    const selectGenes = async (genes: Gene[]) => {
+        setGenes(genes);
+        const res = await axios.get(`/api/data-layer/molecular-profile`, {
+            params: {
+                dataset_id: dataset.id,
+                molecular_profile: layer,
+                gene: genes.map((gene: Gene) => gene.gene_id)
+            },
+            paramsSerializer: {
+                indexes: null // serializes as ?gene=ID1&gene=ID2
+            }
+        });
+        setPlotData(res.data);
     };
 
     return (
@@ -251,32 +210,39 @@ const Visualizations: React.FC = () => {
                             />
                         </div>
                     )}
-                    {retrievingGenes === false ? (
-                        <div className="flex max-w-[270px]">
-                            <MultiSelect
-                                value={genes}
-                                onChange={e => setGenes(e.value)}
-                                options={availableGenes}
-                                optionLabel="name"
-                                dataKey="gene_id"
-                                filter
-                                selectionLimit={20}
-                                virtualScrollerOptions={{ itemSize: 40 }}
-                                display="chip"
-                                placeholder="Select gene"
-                                className="w-full wrap:w-14rem"
-                            />
-                        </div>
-                    ) : (
-                        <div className="flex flex-row justify-center">
-                            <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" />
-                        </div>
-                    )}
+                    <div className="flex gap-2 items-center max-w-[270px]">
+                        <MultiSelect
+                            value={genes}
+                            onChange={e => selectGenes(e.value)}
+                            options={availableGenes}
+                            optionLabel="name"
+                            dataKey="gene_id"
+                            filter
+                            selectionLimit={20}
+                            virtualScrollerOptions={{ itemSize: 40 }}
+                            display="chip"
+                            placeholder="Select gene"
+                            className="w-full wrap:w-14rem"
+                        />
+                        {retrievingGenes && (
+                            <div className="flex flex-row justify-center">
+                                <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <div className="flex flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 wrap:w-full wrap:flex-0">
-                    {visualization === 'Scatter Plot'
-                        ? genes && <DotPlot data={plotData['ATRX']} gene={'ATRX'} />
-                        : genes && <Heatmap data={plotData} />}
+                    {plotData && Object.keys(plotData).length > 0 ? (
+                        visualization === 'Scatter Plot' ? (
+                            genes && <DotPlot data={plotData} />
+                        ) : (
+                            genes && <Heatmap data={plotData} />
+                        )
+                    ) : (
+                        <div className="flex flex-row justify-center items-center w-full">
+                            <h1 className="font-light text-text-primary">Make a data selection to visualize</h1>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -138,7 +138,7 @@ const platformFeatures = [
     },
     {
         icon: CodeXml,
-        title: 'FAIR & Reproducible Research',
+        title: 'FAIR & Reproducible',
         description:
             'Harmonized metadata, standardized identifiers, provenance, controlled access, and reproducible workflows',
         badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/80'
