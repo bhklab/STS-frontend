@@ -3,6 +3,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Hospital, Microscope } from 'lucide-react';
 import DotPlot, { type PlotDataPoint } from '../components/DotPlot';
 import Heatmap from '../components/Heatmap';
+import ViolinPlot from '../components/ViolinPlot';
 import { Tooltip } from 'primereact/tooltip';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { MultiSelect } from 'primereact/multiselect';
@@ -30,7 +31,7 @@ const Visualizations: React.FC = () => {
     const [preclinicalDatasets, setPreclinicalDatasets] = useState<Dataset[]>([]);
     const [clinicalDatasets, setClinicalDatasets] = useState<Dataset[]>([]);
 
-    const [availableVisualizations, setAvailableVisualizations] = useState<String[]>(['Scatter Plot', 'Heatmap']);
+    const [availableVisualizations, setAvailableVisualizations] = useState<String[]>(['Scatter Plot', 'Heatmap', 'Violin Plot']);
     const [visualization, setVisualization] = useState('Scatter Plot');
 
     // Data layer state
@@ -91,6 +92,7 @@ const Visualizations: React.FC = () => {
 
     const selectDataLayer = async (layer: String) => {
         setLayer(layer);
+        if (!dataset) return;
         const res = await axios.get(`/api/datasets/genes`, {
             params: {
                 dataset_id: dataset.id,
@@ -116,6 +118,10 @@ const Visualizations: React.FC = () => {
 
     const selectGenes = async (genes: Gene[]) => {
         setGenes(genes);
+        if (!dataset || genes.length === 0) {
+            setPlotData({});
+            return;
+        }
         const res = await axios.get(`/api/data-layer/molecular-profile`, {
             params: {
                 dataset_id: dataset.id,
@@ -235,8 +241,10 @@ const Visualizations: React.FC = () => {
                     {plotData && Object.keys(plotData).length > 0 ? (
                         visualization === 'Scatter Plot' ? (
                             genes && <DotPlot data={plotData} />
-                        ) : (
+                        ) : visualization === 'Heatmap' ? (
                             genes && <Heatmap data={plotData} />
+                        ) : (
+                            genes && <ViolinPlot data={plotData} layerName={layer as string} />
                         )
                     ) : (
                         <div className="flex flex-row justify-center items-center w-full">
