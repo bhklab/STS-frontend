@@ -322,11 +322,13 @@ const SingleViolinChart: React.FC<SingleViolinChartProps> = ({
             const wScale = d3.scaleLinear().domain([0, kdeData.maxDensity]).range([0, maxViolinHalfWidth]);
 
             const pointGroups = g
-                .selectAll(`.dot-group-${tissue.replace(/\s+/g, '')}`)
+                .append('g')
+                .attr('class', 'tissue-points')
+                .selectAll('g.dot-group')
                 .data(tPoints)
                 .enter()
                 .append('g')
-                .attr('class', `dot-group-${tissue.replace(/\s+/g, '')}`);
+                .attr('class', 'dot-group');
 
             pointGroups
                 .append('circle')
@@ -603,11 +605,13 @@ const AllGenesViolinChart: React.FC<AllGenesViolinChartProps> = ({
 
             // Scatter points inside this gene violin (colored by tissue!)
             const pointGroups = g
-                .selectAll(`.dot-group-${gene}`)
+                .append('g')
+                .attr('class', 'gene-points')
+                .selectAll('g.dot-group')
                 .data(genePoints)
                 .enter()
                 .append('g')
-                .attr('class', `dot-group-${gene}`);
+                .attr('class', 'dot-group');
 
             pointGroups
                 .append('circle')
@@ -759,13 +763,7 @@ const AllGenesViolinChart: React.FC<AllGenesViolinChartProps> = ({
 // --------------------------------------------------------------------------------------
 // Main ViolinPlot Component
 // --------------------------------------------------------------------------------------
-const ViolinPlot: React.FC<ViolinPlotProps> = ({
-    data,
-    layerName = 'RNA-seq',
-    treatment,
-    entityLabel,
-    valueLabel
-}) => {
+const ViolinPlot: React.FC<ViolinPlotProps> = ({ data, layerName = 'RNA-seq', treatment, entityLabel, valueLabel }) => {
     const currentEntityLabel = entityLabel ?? (treatment ? 'Drug' : 'Gene');
     const currentValueLabel = valueLabel ?? (treatment ? 'Response' : 'Value');
 
@@ -790,17 +788,7 @@ const ViolinPlot: React.FC<ViolinPlotProps> = ({
 
     return (
         <div className="flex flex-col w-full" ref={containerRef}>
-            {/* Header info */}
-            {geneNames.length > 0 && (
-                <div className="mb-3 flex flex-row justify-center items-center gap-1">
-                    <h1 className="text-headingMd font-semibold text-text-primary">Selected:</h1>
-                    <h2 className="text-headingSm text-text-primary font-light text-wrap break-words">
-                        {selectedView === 'ALL' ? geneNames.join(', ') : selectedView}
-                    </h2>
-                </div>
-            )}
-
-            {/* Clean button selectors when multiple genes are selected */}
+            {/* Clean button selectors when multiple genes/drugs are selected */}
             {isMultiGene && (
                 <div className="flex flex-row flex-wrap justify-center items-center gap-1.5 mb-4 overflow-x-auto pb-1 max-w-full">
                     <button
