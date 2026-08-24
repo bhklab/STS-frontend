@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Hospital, Microscope } from 'lucide-react';
 import DotPlot, { type PlotDataPoint } from '../components/DotPlot';
@@ -25,13 +25,22 @@ interface Gene {
     name: string;
 }
 
+interface Drug {
+    treatment_id: string;
+    cid: string;
+}
+
 const Visualizations: React.FC = () => {
     const [clinical, setClinical] = useState(false);
     const [dataset, setDataset] = useState<Dataset | null>(null);
     const [preclinicalDatasets, setPreclinicalDatasets] = useState<Dataset[]>([]);
     const [clinicalDatasets, setClinicalDatasets] = useState<Dataset[]>([]);
 
-    const [availableVisualizations, setAvailableVisualizations] = useState<String[]>(['Scatter Plot', 'Heatmap', 'Violin Plot']);
+    const [availableVisualizations, setAvailableVisualizations] = useState<String[]>([
+        'Scatter Plot',
+        'Heatmap',
+        'Violin Plot'
+    ]);
     const [visualization, setVisualization] = useState('Scatter Plot');
 
     // Data layer state
@@ -40,15 +49,44 @@ const Visualizations: React.FC = () => {
 
     // Response type state
     const [availableResponseTypes, setAvailableResponseTypes] = useState<String[]>(['AAC', 'IC50']);
-    const [responseType, setResponseType] = useState<String | null>(null);
+    const [responseType, setResponseType] = useState<String>('AAC');
 
     // Gene state
     const [availableGenes, setAvailableGenes] = useState<Gene[]>([]);
-    const [genes, setGenes] = useState<Gene[]>([]);
+    const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
     const [retrievingGenes, setRetrievingGenes] = useState(false);
+
+    // Drug State
+    const [availableDrugs, setAvailableDrugs] = useState<Drug[]>([]);
+    const [selectedDrugs, setSelectedDrugs] = useState<Drug[]>([]);
+    const [retrievingDrugs, setRetrievingDrugs] = useState(false);
 
     // Plot Data state
     const [plotData, setPlotData] = useState<Record<string, PlotDataPoint[]>>({});
+
+    const isTreatment = layer === 'Treatment Response'; // True, if 'Treatment Response' is selected
+    const entityLabel = isTreatment ? 'Drug' : 'Gene'; // Defining x-axis title, and legend label
+    const valueLabel = isTreatment ? (responseType === 'IC50' ? 'IC50 Response' : 'AAC Response') : 'Value'; // Defining y-axis values
+
+    // Format data for plots based on layer and responseType
+    const formattedPlotData = useMemo<Record<string, PlotDataPoint[]>>(() => {
+        if (!plotData || Object.keys(plotData).length === 0) return {};
+        if (!isTreatment) return plotData as Record<string, PlotDataPoint[]>;
+
+        const metric = responseType === 'IC50' ? 'ic50_recomputed' : 'aac_recomputed';
+        const transformed: Record<string, PlotDataPoint[]> = {};
+
+        for (const [drugName, items] of Object.entries(plotData)) {
+            transformed[drugName] = (items as any[])
+                .filter(p => p[metric] !== null && p[metric] !== undefined && !isNaN(Number(p[metric])))
+                .map(p => ({
+                    cellLine: p.cellLine,
+                    value: Number(p[metric]),
+                    tissue: p.tissue
+                }));
+        }
+        return transformed;
+    }, [plotData, isTreatment, responseType]);
 
     useEffect(() => {
         const getDatasets = async () => {
@@ -75,6 +113,10 @@ const Visualizations: React.FC = () => {
         setDataset(dataset);
         setAvailableLayers([]);
         setAvailableGenes([]);
+        setAvailableDrugs([]);
+        setSelectedGenes([]);
+        setSelectedDrugs([]);
+        setPlotData({});
         getDataLayers(dataset.id);
     };
 
@@ -84,24 +126,32 @@ const Visualizations: React.FC = () => {
                 dataset_id: dataset_id
             }
         });
-        setGenes([]);
+        setSelectedGenes([]);
+        setSelectedDrugs([]);
         setPlotData({});
-        getAvailableGenes(dataset_id, res.data[0]);
+        const firstLayer = res.data[0];
+        setLayer(firstLayer);
+        if (firstLayer === 'Treatment Response') {
+            if (!responseType) setResponseType('AAC');
+            getAvailableDrugs(dataset_id);
+        } else {
+            getAvailableGenes(dataset_id, firstLayer);
+        }
         setAvailableLayers(res.data);
     };
 
     const selectDataLayer = async (layer: String) => {
         setLayer(layer);
         if (!dataset) return;
-        const res = await axios.get(`/api/datasets/genes`, {
-            params: {
-                dataset_id: dataset.id,
-                molecular_profile: layer
-            }
-        });
-        setGenes([]);
+        if (layer === 'Treatment Response') {
+            if (!responseType) setResponseType('AAC');
+            getAvailableDrugs(dataset.id);
+        } else {
+            getAvailableGenes(dataset.id, layer);
+        }
+        setSelectedGenes([]);
+        setSelectedDrugs([]);
         setPlotData({});
-        setAvailableGenes(res.data);
     };
 
     const getAvailableGenes = async (dataset_id: number, layer: String) => {
@@ -117,7 +167,7 @@ const Visualizations: React.FC = () => {
     };
 
     const selectGenes = async (genes: Gene[]) => {
-        setGenes(genes);
+        setSelectedGenes(genes);
         if (!dataset || genes.length === 0) {
             setPlotData({});
             return;
@@ -135,6 +185,35 @@ const Visualizations: React.FC = () => {
         setPlotData(res.data);
     };
 
+    const getAvailableDrugs = async (dataset_id: number) => {
+        setRetrievingDrugs(true);
+        const res = await axios.get(`/api/datasets/drugs`, {
+            params: {
+                dataset_id: dataset_id
+            }
+        });
+        setAvailableDrugs(res.data);
+        setRetrievingDrugs(false);
+    };
+
+    const selectDrugs = async (drugs: Drug[]) => {
+        setSelectedDrugs(drugs);
+        if (!dataset || drugs.length === 0) {
+            setPlotData({});
+            return;
+        }
+        const res = await axios.get(`/api/data-layer/treatment-response`, {
+            params: {
+                dataset_id: dataset.id,
+                drug: drugs.map((drug: Drug) => drug.treatment_id)
+            },
+            paramsSerializer: {
+                indexes: null // serializes as ?drug=ID1&drug=ID2
+            }
+        });
+        setPlotData(res.data);
+    };
+
     return (
         <div className="w-full bg-background px-10 py-10 wrap:py-4">
             <div
@@ -142,7 +221,7 @@ const Visualizations: React.FC = () => {
             >
                 <Tooltip target=".preclinical-icon" />
                 <Tooltip target=".clinical-icon" />
-                <div className="flex flex-col min-w-75 gap-4 bg-white p-4 rounded-md shadow-card border border-border/75 wrap:w-full wrap:flex-row wrap:flex-wrap">
+                <div className="flex flex-col w-60 gap-4 bg-white p-4 rounded-md shadow-card border border-border/75 wrap:w-full wrap:flex-row wrap:flex-wrap">
                     <div className="flex flex-row">
                         <div className="flex flex-row gap-4 justify-center">
                             <div
@@ -216,35 +295,74 @@ const Visualizations: React.FC = () => {
                             />
                         </div>
                     )}
-                    <div className="flex gap-2 items-center max-w-[270px]">
-                        <MultiSelect
-                            value={genes}
-                            onChange={e => selectGenes(e.value)}
-                            options={availableGenes}
-                            optionLabel="name"
-                            dataKey="gene_id"
-                            filter
-                            selectionLimit={20}
-                            virtualScrollerOptions={{ itemSize: 40 }}
-                            display="chip"
-                            placeholder="Select gene"
-                            className="w-full wrap:w-14rem"
-                        />
-                        {retrievingGenes && (
-                            <div className="flex flex-row justify-center">
-                                <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />
-                            </div>
-                        )}
-                    </div>
+                    {layer !== 'Treatment Response' ? (
+                        <div className="flex gap-2 items-center max-w-[270px]">
+                            <MultiSelect
+                                value={selectedGenes}
+                                onChange={e => selectGenes(e.value)}
+                                options={availableGenes}
+                                optionLabel="name"
+                                dataKey="gene_id"
+                                filter
+                                selectionLimit={20}
+                                virtualScrollerOptions={{ itemSize: 40 }}
+                                display="chip"
+                                placeholder="Select gene"
+                                className="w-full wrap:w-14rem"
+                            />
+                            {retrievingGenes && (
+                                <div className="flex flex-row justify-center">
+                                    <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex gap-2 items-center max-w-[270px]">
+                            <MultiSelect
+                                value={selectedDrugs}
+                                onChange={e => selectDrugs(e.value)}
+                                options={availableDrugs}
+                                optionLabel="treatment_id"
+                                dataKey="treatment_id"
+                                filter
+                                selectionLimit={20}
+                                virtualScrollerOptions={{ itemSize: 40 }}
+                                display="chip"
+                                placeholder="Select a drug"
+                                className="w-full wrap:w-14rem"
+                            />
+                            {retrievingDrugs && (
+                                <div className="flex flex-row justify-center">
+                                    <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div className="flex flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 wrap:w-full wrap:flex-0">
-                    {plotData && Object.keys(plotData).length > 0 ? (
+                    {formattedPlotData && Object.keys(formattedPlotData).length > 0 ? (
                         visualization === 'Scatter Plot' ? (
-                            genes && <DotPlot data={plotData} />
+                            <DotPlot
+                                data={formattedPlotData}
+                                treatment={isTreatment}
+                                entityLabel={entityLabel}
+                                valueLabel={valueLabel}
+                            />
                         ) : visualization === 'Heatmap' ? (
-                            genes && <Heatmap data={plotData} />
+                            <Heatmap
+                                data={formattedPlotData}
+                                treatment={isTreatment}
+                                entityLabel={entityLabel}
+                                valueLabel={valueLabel}
+                            />
                         ) : (
-                            genes && <ViolinPlot data={plotData} layerName={layer as string} />
+                            <ViolinPlot
+                                data={formattedPlotData}
+                                layerName={layer as string}
+                                treatment={isTreatment}
+                                entityLabel={entityLabel}
+                                valueLabel={valueLabel}
+                            />
                         )
                     ) : (
                         <div className="flex flex-row justify-center items-center w-full">
