@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router';
 import { HardDrive, ChartLine, BotMessageSquare, CodeXml } from 'lucide-react';
 
 interface AnimatedCounterProps {
     end: number;
     duration?: number;
+}
+
+interface DatasetStatistics {
+    total_clinical_datasets: number;
+    total_pre_clinical_datasets: number;
+    total_pre_clinical_samples: number;
+    total_clinical_samples: number;
+    total_drugs: number;
+    total_cell_lines: number;
+    total_genes: number;
 }
 
 const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ end, duration = 2000 }) => {
@@ -146,7 +157,25 @@ const platformFeatures = [
 ];
 
 const Home: React.FC = () => {
+    const [landingPageStats, setLandingPageStats] = useState<DatasetStatistics>({
+        total_clinical_datasets: 0,
+        total_pre_clinical_datasets: 0,
+        total_pre_clinical_samples: 0,
+        total_clinical_samples: 0,
+        total_drugs: 0,
+        total_cell_lines: 0,
+        total_genes: 0
+    });
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const getLandingPageStats = async () => {
+            const res = await axios.get(`/api/datasets/statistics`);
+            console.log(res.data);
+            setLandingPageStats(res.data);
+        };
+        getLandingPageStats();
+    }, []);
 
     return (
         <div className="flex flex-col bg-background min-h-[95vh] justify-center items-center">
@@ -205,7 +234,7 @@ const Home: React.FC = () => {
                 <div className="flex flex-wrap justify-center items-center max-w-[1000px] w-full gap-4 absolute bottom-8 md:static md:bottom-3">
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
                         <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={clinical_datasets.length} duration={1200} />
+                            <AnimatedCounter end={landingPageStats.total_clinical_datasets} duration={1200} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
                             Clinical Datasets
@@ -213,7 +242,7 @@ const Home: React.FC = () => {
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
                         <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={preclinical_datasets.length} duration={1300} />
+                            <AnimatedCounter end={landingPageStats.total_pre_clinical_datasets} duration={1300} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
                             Preclinical Datasets
@@ -221,7 +250,7 @@ const Home: React.FC = () => {
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
                         <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={60} duration={1800} />
+                            <AnimatedCounter end={landingPageStats.total_clinical_samples} duration={1800} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
                             Clinical Samples
@@ -229,7 +258,7 @@ const Home: React.FC = () => {
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
                         <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={200} duration={2200} />
+                            <AnimatedCounter end={landingPageStats.total_pre_clinical_samples} duration={2200} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
                             Preclinical Samples
@@ -237,23 +266,21 @@ const Home: React.FC = () => {
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
                         <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={200} duration={2200} />
+                            <AnimatedCounter end={landingPageStats.total_drugs} duration={2200} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Drugs</span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
                         <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={200} duration={2200} />
+                            <AnimatedCounter end={landingPageStats.total_cell_lines} duration={2200} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Cell Lines</span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
                         <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={8} duration={1400} />
+                            <AnimatedCounter end={landingPageStats.total_genes} duration={1400} />
                         </span>
-                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                            Unique Data Layers
-                        </span>
+                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Genes</span>
                     </div>
                 </div>
             </div>
