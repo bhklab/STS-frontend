@@ -10,6 +10,9 @@ export interface PlotDataPoint {
 
 interface DotPlotProps {
     data: Record<string, PlotDataPoint[]>;
+    treatment?: boolean;
+    entityLabel?: string;
+    valueLabel?: string;
 }
 
 export const TISSUE_COLORS: Record<string, string> = {
@@ -50,7 +53,10 @@ interface FlatDataPoint {
     tissue: string;
 }
 
-const DotPlot: React.FC<DotPlotProps> = ({ data }) => {
+const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLabel }) => {
+    const currentEntityLabel = entityLabel ?? (treatment ? 'Drug' : 'Gene');
+    const currentValueLabel = valueLabel ?? (treatment ? 'Response' : 'Value');
+
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [containerRef, width] = useContainerSize();
     const height = Math.max(Math.round(width * 0.5), 450);
@@ -74,7 +80,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data }) => {
         const maxRows = Math.ceil(geneNames.length / 2);
 
         // Dimensions
-        const margin = { top: 30, right: 200, bottom: 100, left: 70 };
+        const margin = { top: 30, right: 220, bottom: 100, left: 70 };
         const innerW = width - margin.left - margin.right;
         const innerH = height - margin.top - margin.bottom;
 
@@ -153,7 +159,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data }) => {
             .attr('fill', '#1f2937')
             .attr('font-size', '13px')
             .attr('font-weight', '500')
-            .text('Value');
+            .text(currentValueLabel);
 
         // X axis
         const xAxis = g.append('g').attr('transform', `translate(0,${innerH})`).call(d3.axisBottom(xScale));
@@ -259,7 +265,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data }) => {
             .on('mouseenter', (_event, d) => {
                 tooltip
                     .html(
-                        `<strong>Gene: </strong>${d.gene}<br/><strong>Cell Line: </strong>${d.cellLine}<br/><strong>Value: </strong>${d.value.toFixed(2)}<br/><strong>Tissue: </strong>${d.tissue}`
+                        `<strong>${currentEntityLabel}: </strong>${d.gene}<br/><strong>Cell Line: </strong>${d.cellLine}<br/><strong>${currentValueLabel}: </strong>${d.value.toFixed(2)}<br/><strong>Tissue: </strong>${d.tissue}`
                     )
                     .style('opacity', '1');
             })
@@ -271,63 +277,108 @@ const DotPlot: React.FC<DotPlotProps> = ({ data }) => {
                 tooltip.style('opacity', '0');
             });
 
-        // Legend Group
-        const legend = g.append('g').attr('transform', `translate(${innerW + 20}, 0)`);
-
-        // 1. Genes Legend (Always 2 columns)
-        const geneLegend = legend.append('g').attr('transform', 'translate(0, 0)');
-        geneLegend
-            .append('text')
-            .attr('x', 0)
+        // Legend Group via foreignObject for auto-wrapping multi-line text
+        const legendForeign = g
+            .append('foreignObject')
+            .attr('x', innerW + 15)
             .attr('y', 0)
-            .attr('fill', '#1f2937')
-            .attr('font-size', '13px')
-            .attr('font-weight', '600')
-            .text('Genes');
+            .attr('width', margin.right - 20)
+            .attr('height', innerH + margin.bottom);
 
-        geneNames.forEach((gName, i) => {
-            const col = Math.floor(i / maxRows);
-            const rowIdx = i % maxRows;
+        const legendContainer = legendForeign
+            .append('xhtml:div')
+            .style('font-family', "'Roboto', 'Inter', system-ui, sans-serif")
+            .style('display', 'flex')
+            .style('flex-direction', 'column')
+            .style('gap', '16px')
+            .style('max-height', `${innerH + margin.bottom}px`)
+            .style('overflow-y', 'auto')
+            .style('padding-right', '4px');
 
-            const row = geneLegend.append('g').attr('transform', `translate(${col * colWidth}, ${16 + rowIdx * 18})`);
-            row.append('line')
-                .attr('x1', 0)
-                .attr('x2', 10)
-                .attr('y1', 0)
-                .attr('y2', 0)
-                .attr('stroke', geneColorScale(gName))
-                .attr('stroke-width', 3);
-            row.append('text').attr('x', 14).attr('y', 4).attr('fill', '#5f6f7f').attr('font-size', '11px').text(gName);
+        // 1. Entities Section (Wrapped text)
+        const entitySection = legendContainer.append('xhtml:div');
+        entitySection
+            .append('xhtml:div')
+            .style('font-size', '13px')
+            .style('font-weight', '600')
+            .style('color', '#1f2937')
+            .style('margin-bottom', '8px')
+            .text(`${currentEntityLabel}s`);
+
+        const entityGrid = entitySection
+            .append('xhtml:div')
+            .style('display', 'grid')
+            .style('grid-template-columns', isSingleGene ? '1fr' : 'repeat(2, 1fr)')
+            .style('gap', '8px 10px');
+
+        geneNames.forEach(gName => {
+            const item = entityGrid
+                .append('xhtml:div')
+                .style('display', 'flex')
+                .style('align-items', 'flex-start')
+                .style('gap', '6px');
+
+            item.append('xhtml:span')
+                .style('display', 'inline-block')
+                .style('width', '12px')
+                .style('height', '3px')
+                .style('background', geneColorScale(gName))
+                .style('margin-top', '6px')
+                .style('flex-shrink', '0')
+                .style('border-radius', '1.5px');
+
+            item.append('xhtml:span')
+                .style('font-size', '11px')
+                .style('color', '#5f6f7f')
+                .style('line-height', '1.3')
+                .style('word-break', 'break-word')
+                .style('overflow-wrap', 'break-word')
+                .text(gName);
         });
 
-        // 2. Tissue Legend (Dots)
-        const tissueLegendY = 16 + maxRows * 18 + 14;
-        const tissueLegend = legend.append('g').attr('transform', `translate(0, ${tissueLegendY})`);
-
-        tissueLegend
-            .append('text')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('fill', '#1f2937')
-            .attr('font-size', '13px')
-            .attr('font-weight', '600')
+        // 2. Tissue Section
+        const tissueSection = legendContainer.append('xhtml:div');
+        tissueSection
+            .append('xhtml:div')
+            .style('font-size', '13px')
+            .style('font-weight', '600')
+            .style('color', '#1f2937')
+            .style('margin-bottom', '8px')
             .text('Tissue Plot Dots');
 
+        const tissueList = tissueSection
+            .append('xhtml:div')
+            .style('display', 'flex')
+            .style('flex-direction', 'column')
+            .style('gap', '6px');
+
         const tissues = Array.from(new Set(flat.map(d => d.tissue)));
-        tissues.forEach((t, i) => {
-            const row = tissueLegend.append('g').attr('transform', `translate(0, ${16 + i * 18})`);
-            row.append('circle')
-                .attr('cx', 5)
-                .attr('cy', 0)
-                .attr('r', 4.5)
-                .attr('fill', TISSUE_COLORS[t] ?? DEFAULT_COLOR);
-            row.append('text').attr('x', 14).attr('y', 4).attr('fill', '#5f6f7f').attr('font-size', '11px').text(t);
+        tissues.forEach(t => {
+            const item = tissueList
+                .append('xhtml:div')
+                .style('display', 'flex')
+                .style('align-items', 'center')
+                .style('gap', '6px');
+
+            item.append('xhtml:span')
+                .style('display', 'inline-block')
+                .style('width', '9px')
+                .style('height', '9px')
+                .style('border-radius', '50%')
+                .style('background', TISSUE_COLORS[t] ?? DEFAULT_COLOR)
+                .style('flex-shrink', '0');
+
+            item.append('xhtml:span')
+                .style('font-size', '11px')
+                .style('color', '#5f6f7f')
+                .style('word-break', 'break-word')
+                .text(t);
         });
 
         return () => {
             tooltip.remove();
         };
-    }, [data, width, height]);
+    }, [data, width, height, currentEntityLabel, currentValueLabel]);
 
     const geneNames = Object.keys(data);
 
