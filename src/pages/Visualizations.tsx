@@ -65,7 +65,13 @@ const Visualizations: React.FC = () => {
     const [plotData, setPlotData] = useState<Record<string, PlotDataPoint[]>>({});
 
     const isTreatment = layer === 'Treatment Response'; // True, if 'Treatment Response' is selected
-    const entityLabel = isTreatment ? 'Drug' : 'Gene'; // Defining x-axis title, and legend label
+    const entityLabel = useMemo(() => {
+        if (isTreatment) return 'Drug';
+        if (layer === 'RPPA') return 'Antigen';
+        if (layer === 'MiRNA') return 'miRNA';
+        if (layer === 'Methylation') return 'Probe';
+        return 'Gene';
+    }, [isTreatment, layer]);
     const valueLabel = isTreatment ? (responseType === 'IC50' ? 'IC50 Response' : 'AAC Response') : 'Value'; // Defining y-axis values
 
     // Format data for plots based on layer and responseType
@@ -182,7 +188,16 @@ const Visualizations: React.FC = () => {
                 indexes: null // serializes as ?gene=ID1&gene=ID2
             }
         });
-        setPlotData(res.data);
+        // Clinical data returns `sample` instead of `cellLine`; normalize to a common shape
+        const normalized: Record<string, PlotDataPoint[]> = {};
+        for (const [geneName, points] of Object.entries(res.data as Record<string, any[]>)) {
+            normalized[geneName] = points.map(p => ({
+                cellLine: p.cellLine ?? String(p.sample),
+                value: p.value ?? (p.mutation !== undefined ? (p.mutation ? 1 : 0) : 0),
+                tissue: p.tissue
+            }));
+        }
+        setPlotData(normalized);
     };
 
     const getAvailableDrugs = async (dataset_id: number) => {
@@ -249,7 +264,7 @@ const Visualizations: React.FC = () => {
                         {clinical ? (
                             <Dropdown
                                 value={dataset}
-                                onChange={e => setDataset(e.value)}
+                                onChange={e => selectDataset(e.value)}
                                 options={clinicalDatasets}
                                 optionLabel="name"
                                 placeholder="Select a clinical dataset"
@@ -304,10 +319,11 @@ const Visualizations: React.FC = () => {
                                 optionLabel="name"
                                 dataKey="gene_id"
                                 filter
+                                filterBy="name,gene_id"
                                 selectionLimit={20}
                                 virtualScrollerOptions={{ itemSize: 40 }}
                                 display="chip"
-                                placeholder="Select gene"
+                                placeholder={`Select ${entityLabel.toLowerCase()}`}
                                 className="w-full wrap:w-14rem"
                             />
                             {retrievingGenes && (
