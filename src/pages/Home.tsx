@@ -170,7 +170,7 @@ const Home: React.FC = () => {
 
     useEffect(() => {
         const getLandingPageStats = async () => {
-            const res = await axios.get(`/api/datasets/statistics`);
+            const res = await axios.get(`/api/datasets/statistics/landing-page`);
             console.log(res.data);
             setLandingPageStats(res.data);
         };
