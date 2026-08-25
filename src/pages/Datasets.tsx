@@ -1,314 +1,363 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import axios from 'axios';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Chart } from 'primereact/chart';
+import { ProgressSpinner } from 'primereact/progressspinner';
+
+interface DatasetItem {
+    id: number;
+    name: string;
+    description?: string;
+    version?: string;
+    link?: string;
+    publication?: string;
+    PMID?: string;
+    key_study_findings?: string | null;
+    total_samples: number;
+    total_genes: number;
+    total_drugs: number;
+    total_cell_lines: number;
+    data_layers: string[];
+}
+
+const DATASET_COLORS = [
+    '#3b82f6', // blue
+    '#10b981', // emerald
+    '#f59e0b', // amber
+    '#8b5cf6', // purple
+    '#ef4444', // red
+    '#06b6d4', // cyan
+    '#ec4899', // pink
+    '#6366f1', // indigo
+    '#14b8a6', // teal
+    '#f97316' // orange
+];
 
 const Datasets: React.FC = () => {
-    const [barChartData, setBarChartData] = useState({});
-    const [barChartOptions, setBarChartOptions] = useState({});
-
-    const clinical_datasets = [
-        {
-            name: 'TCGA',
-            id: 1,
-            description:
-                'TCGA Sarcoma is described as a multi-platform molecular landscape of 206 adult soft tissue sarcomas representing 6 major types. Along with novel insights into the biology of individual sarcoma types, we report three overarching findings: 1) unlike most epithelial malignancies, these sarcomas (excepting synovial sarcoma) are characterized predominantly by copy number changes, with low mutational loads and only a few genes (TP53, ATRX, RB1) highly recurrently mutated across sarcoma types, 2) within sarcoma types, genomic and regulomic diversity of driver pathways defines molecular subtypes associated with patient outcome, and 3) the immune microenvironment, inferred from DNA methylation and mRNA profiles, associates with outcome and may inform clinical trials of immune checkpoint inhibitors.',
-            version: '2017',
-            layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
-        },
-        {
-            name: 'German',
-            id: 2,
-            description:
-                'TCGA Sarcoma is described as a multi-platform molecular landscape of 206 adult soft tissue sarcomas representing 6 major types. Along with novel insights into the biology of individual sarcoma types, we report three overarching findings: 1) unlike most epithelial malignancies, these sarcomas (excepting synovial sarcoma) are characterized predominantly by copy number changes, with low mutational loads and only a few genes (TP53, ATRX, RB1) highly recurrently mutated across sarcoma types, 2) within sarcoma types, genomic and regulomic diversity of driver pathways defines molecular subtypes associated with patient outcome, and 3) the immune microenvironment, inferred from DNA methylation and mRNA profiles, associates with outcome and may inform clinical trials of immune checkpoint inhibitors.',
-            version: '2017',
-            layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
-        },
-        {
-            name: 'Hemming',
-            id: 3,
-            description:
-                'TCGA Sarcoma is described as a multi-platform molecular landscape of 206 adult soft tissue sarcomas representing 6 major types. Along with novel insights into the biology of individual sarcoma types, we report three overarching findings: 1) unlike most epithelial malignancies, these sarcomas (excepting synovial sarcoma) are characterized predominantly by copy number changes, with low mutational loads and only a few genes (TP53, ATRX, RB1) highly recurrently mutated across sarcoma types, 2) within sarcoma types, genomic and regulomic diversity of driver pathways defines molecular subtypes associated with patient outcome, and 3) the immune microenvironment, inferred from DNA methylation and mRNA profiles, associates with outcome and may inform clinical trials of immune checkpoint inhibitors.',
-            version: '2017',
-            layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
-        }
-    ];
-
-    const preclinical_datasets = [
-        {
-            name: 'CCLE',
-            id: 1,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2019',
-            layers: [
-                'Treatment Response',
-                'RNAseq',
-                'Microarray',
-                'Mutation',
-                'Copy Number Variation',
-                'Methylation',
-                'RPPA'
-            ]
-        },
-        {
-            name: 'GDSC',
-            id: 2,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2020',
-            layers: ['RNAseq', 'Microarray', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
-        },
-        {
-            name: 'CTRP',
-            id: 3,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2015',
-            layers: ['Treatment Response', 'Mutation', 'Copy Number Variation']
-        },
-        {
-            name: 'gCSI',
-            id: 4,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2019',
-            layers: ['RNAseq', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
-        },
-        {
-            name: 'NCI Sarcoma',
-            id: 5,
-            description:
-                'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-            version: '2015',
-            layers: ['Microarray', 'miRNA']
-        }
-    ];
-
-    const pre_clinical_chart_data = {
-        labels: preclinical_datasets.map(dataset => dataset.name),
-        datasets: [
-            {
-                label: 'Samples',
-                data: [300, 50, 100, 500, 200],
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)',
-                    'rgb(99, 117, 255)',
-                    'rgb(255, 154, 99)'
-                ],
-                hoverOffset: 8
-            },
-            {
-                label: 'Genes',
-                data: [500, 200, 300, 600, 100],
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)',
-                    'rgb(99, 117, 255)',
-                    'rgb(255, 154, 99)'
-                ],
-                hoverOffset: 8
-            }
-        ]
-    };
-
-    const clinical_chart_data = {
-        labels: clinical_datasets.map(dataset => dataset.name),
-        datasets: [
-            {
-                label: 'Samples',
-                data: [300, 50, 100],
-                backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'],
-                hoverOffset: 8
-            },
-            {
-                label: 'Genes',
-                data: [500, 200, 300],
-                backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'],
-                hoverOffset: 8
-            },
-            {
-                label: 'Genes',
-                data: [500, 200, 300],
-                backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'],
-                hoverOffset: 8
-            }
-        ]
-    };
+    const [preclinicalDatasets, setPreclinicalDatasets] = useState<DatasetItem[]>([]);
+    const [clinicalDatasets, setClinicalDatasets] = useState<DatasetItem[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const documentStyle = getComputedStyle(document.documentElement);
-        const textColor = documentStyle.getPropertyValue('--text-color');
-        const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
-        const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
-        const data = {
-            labels: ['Samples', 'Genes', 'Drugs', 'Cell Lines'],
+        const getDatasetStatistics = async () => {
+            setLoading(true);
+            try {
+                const res = await axios.get('/api/datasets/statistics/dataset-page');
+                setClinicalDatasets(res.data.clinical_datasets || []);
+                setPreclinicalDatasets(res.data.preclinical_datasets || []);
+            } catch (error) {
+                console.error('Error fetching dataset statistics:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        getDatasetStatistics();
+    }, []);
+
+    // Helper to generate multi-ring doughnut datasets across all 5 metrics
+    const createMultiLevelChartData = (datasets: DatasetItem[]) => {
+        if (!datasets || datasets.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        const labels = datasets.map(d => d.name);
+
+        return {
+            labels,
             datasets: [
+                // Ring 1 (Outermost): Samples
                 {
-                    type: 'bar',
-                    label: 'TCGA',
-                    backgroundColor: documentStyle.getPropertyValue('--blue-500'),
-                    data: [50, 25, 12, 48]
+                    label: 'Samples',
+                    data: datasets.map(d => d.total_samples || 0),
+                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
+                    hoverOffset: 6
                 },
+                // Ring 2: Cell Lines
                 {
-                    type: 'bar',
-                    label: 'German',
-                    backgroundColor: documentStyle.getPropertyValue('--green-500'),
-                    data: [21, 84, 24, 75]
+                    label: 'Cell Lines',
+                    data: datasets.map(d => d.total_cell_lines || 0),
+                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
+                    hoverOffset: 6
                 },
+                // Ring 3: Drugs
                 {
-                    type: 'bar',
-                    label: 'Hemming',
-                    backgroundColor: documentStyle.getPropertyValue('--yellow-500'),
-                    data: [41, 52, 24, 74]
+                    label: 'Drugs',
+                    data: datasets.map(d => d.total_drugs || 0),
+                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
+                    hoverOffset: 6
+                },
+                // Ring 4: Genes
+                {
+                    label: 'Genes',
+                    data: datasets.map(d => d.total_genes || 0),
+                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
+                    hoverOffset: 6
+                },
+                // Ring 5 (Innermost): Data Layers Count
+                {
+                    label: 'Data Layers',
+                    data: datasets.map(d => (d.data_layers || []).length),
+                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
+                    hoverOffset: 6
                 }
             ]
         };
-        const options = {
-            maintainAspectRatio: false,
-            aspectRatio: 0.8,
-            plugins: {
-                tooltips: {
-                    mode: 'index',
-                    intersect: false
-                },
-                legend: {
-                    labels: {
-                        color: textColor
+    };
+
+    const pre_clinical_chart_data = useMemo(
+        () => createMultiLevelChartData(preclinicalDatasets),
+        [preclinicalDatasets]
+    );
+
+    const clinical_chart_data = useMemo(() => createMultiLevelChartData(clinicalDatasets), [clinicalDatasets]);
+
+    const getChartOptions = (datasetList: DatasetItem[]) => ({
+        maintainAspectRatio: false,
+        responsive: true,
+        cutout: '22%',
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    title: function (context: any) {
+                        const item = context[0];
+                        const datasetName = item.chart.data.labels[item.dataIndex];
+                        const ringLabel = item.dataset.label;
+                        return `${datasetName} — ${ringLabel}`;
+                    },
+                    label: function (context: any) {
+                        const ringLabel = context.dataset.label;
+                        const value = context.parsed;
+                        const datasetName = context.chart.data.labels[context.dataIndex];
+
+                        if (ringLabel === 'Data Layers') {
+                            const ds = datasetList.find(d => d.name === datasetName);
+                            const layers = ds?.data_layers?.join(', ') || 'None';
+                            return ` ${value} Layers (${layers})`;
+                        }
+                        return ` ${value.toLocaleString()}`;
                     }
                 }
             },
-            scales: {
-                x: {
-                    stacked: true,
-                    ticks: {
-                        color: textColorSecondary
-                    },
-                    grid: {
-                        color: surfaceBorder
-                    }
-                },
-                y: {
-                    stacked: true,
-                    ticks: {
-                        color: textColorSecondary
-                    },
-                    grid: {
-                        color: surfaceBorder
+            legend: {
+                position: 'bottom' as const,
+                labels: {
+                    usePointStyle: true,
+                    padding: 16,
+                    font: {
+                        size: 12,
+                        family: "'Roboto', 'Inter', system-ui, sans-serif"
                     }
                 }
             }
-        };
-
-        setBarChartData(data);
-        setBarChartOptions(options);
-    }, []);
+        }
+    });
 
     return (
-        <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10 py-10">
-            <div className="flex flex-row gap-20 items-center justify-center w-full">
-                <div className="w-full max-w-5xl flex flex-col gap-2 items-center justify-center">
-                    <Chart type="bar" data={barChartData} options={barChartOptions} className="w-full" />
+        <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10 py-10 max-w-[2000px]">
+            {/* Overview Multi-level Pie / Doughnut Charts */}
+            {loading ? (
+                <div className="w-full flex flex-col gap-6 justify-center items-center h-96">
+                    <ProgressSpinner style={{ width: '150px', height: '150px' }} strokeWidth="4" />
+                    <span className="text-bodyMd font-medium">Fetching dataset statistics ...</span>
                 </div>
-                <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center">
-                    <h2 className="text-headingMd text-text-secon"> Preclinical Statistics</h2>
-                    <Chart type="pie" data={pre_clinical_chart_data} className="w-full" />
-                </div>
-                <div className="w-full max-w-xl flex flex-col gap-2 items-center justify-center">
-                    <h2 className="text-headingMd text-text-primary"> Clinical Statistics</h2>
-                    <Chart type="pie" data={clinical_chart_data} className="w-full" />
-                </div>
-            </div>
-            <div className="flex flex-col gap-4 w-full">
-                <h1 className="text-heading2Xl font-semibold text-text-primary text-left">Preclinical Datasets</h1>
-                <DataTable
-                    value={preclinical_datasets}
-                    sortMode="single"
-                    sortField="info.dateCreated"
-                    sortOrder={-1}
-                    size="small"
-                    showGridlines={true}
-                    stripedRows
-                >
-                    <Column
-                        field="name"
-                        header="Object Name"
-                        style={{ width: '10%' }}
-                        body={rowData => <h3 className="text-headingSm text-primary font-bold">{rowData.name}</h3>}
-                        sortable
-                    />
-                    <Column field="version" header="Version" style={{ width: '10%' }} />
-                    <Column
-                        body={rowData => (
-                            <p
-                                className="line-clamp-4 text-bodySm"
-                                dangerouslySetInnerHTML={{ __html: rowData?.description }}
+            ) : (
+                <div>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 w-full">
+                        <div className="flex flex-col gap-6 items-center bg-white p-6 rounded-md shadow-card border border-border/75">
+                            <h2 className="text-headingLg font-semibold text-text-primary">
+                                Preclinical Datasets Breakdown
+                            </h2>
+                            <div className="w-full flex justify-center items-center h-96">
+                                {preclinicalDatasets.length > 0 ? (
+                                    <Chart
+                                        type="doughnut"
+                                        data={pre_clinical_chart_data}
+                                        options={getChartOptions(preclinicalDatasets)}
+                                        className="w-full h-full max-w-md"
+                                    />
+                                ) : (
+                                    <div className="text-text-secondary text-bodySm">
+                                        No preclinical datasets available
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-6 items-center bg-white p-6 rounded-md shadow-card border border-border/75">
+                            <h2 className="text-headingLg font-semibold text-text-primary">
+                                Clinical Datasets Breakdown
+                            </h2>
+                            <div className="w-full flex justify-center items-center h-96">
+                                {clinicalDatasets.length > 0 ? (
+                                    <Chart
+                                        type="doughnut"
+                                        data={clinical_chart_data}
+                                        options={getChartOptions(clinicalDatasets)}
+                                        className="w-full h-full max-w-md"
+                                    />
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center text-text-secondary text-bodySm py-12 gap-2">
+                                        <span className="text-bodyMd font-medium">No clinical datasets available</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-4 w-full">
+                        <h1 className="text-heading2Xl font-semibold text-text-primary text-left">
+                            Preclinical Datasets
+                        </h1>
+                        <DataTable
+                            value={preclinicalDatasets}
+                            loading={loading}
+                            sortMode="single"
+                            sortField="name"
+                            sortOrder={1}
+                            size="small"
+                            showGridlines={true}
+                            stripedRows
+                            className="shadow-card rounded-md overflow-hidden bg-white"
+                        >
+                            <Column
+                                field="name"
+                                header="Object Name"
+                                style={{ width: '5%' }}
+                                body={rowData =>
+                                    rowData.link ? (
+                                        <a
+                                            href={rowData.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-headingSm text-primary font-bold hover:underline"
+                                        >
+                                            {rowData.name}
+                                        </a>
+                                    ) : (
+                                        <h3 className="text-headingSm text-primary font-bold">{rowData.name}</h3>
+                                    )
+                                }
+                                sortable
                             />
-                        )}
-                        header="Description"
-                        style={{ width: '45%' }}
-                    />
-                    <Column
-                        body={rowData => (
-                            <div className="flex gap-2 flex-wrap">
-                                {rowData?.layers &&
-                                    rowData.layers.map((layer: any, ind: number) => (
-                                        <span key={ind} className="rounded-lg bg-primary p-2 text-bodySm text-white">
-                                            {layer}
-                                        </span>
-                                    ))}
-                            </div>
-                        )}
-                        header="Data Layers"
-                        style={{ width: '35%' }}
-                    />
-                </DataTable>
-            </div>
-            <div className="flex flex-col gap-4 w-full">
-                <h1 className="text-heading2Xl font-semibold text-text-primary text-left">Clinical Datasets</h1>
-                <DataTable
-                    value={clinical_datasets}
-                    sortMode="single"
-                    sortField="info.dateCreated"
-                    sortOrder={-1}
-                    size="small"
-                    showGridlines={true}
-                    stripedRows
-                >
-                    <Column
-                        field="name"
-                        header="Object Name"
-                        style={{ width: '10%' }}
-                        body={rowData => <h3 className="text-headingSm text-primary font-bold">{rowData.name}</h3>}
-                        sortable
-                    />
-                    <Column field="version" header="Version" style={{ width: '10%' }} />
-                    <Column
-                        body={rowData => (
-                            <p className="text-bodySm" dangerouslySetInnerHTML={{ __html: rowData?.description }} />
-                        )}
-                        header="Description"
-                        style={{ width: '45%' }}
-                    />
-                    <Column
-                        body={rowData => (
-                            <div className="flex gap-2 flex-wrap">
-                                {rowData?.layers &&
-                                    rowData.layers.map((layer: any, ind: number) => (
-                                        <span key={ind} className="rounded-lg bg-primary p-2 text-bodySm text-white">
-                                            {layer}
-                                        </span>
-                                    ))}
-                            </div>
-                        )}
-                        header="Data Layers"
-                        style={{ width: '35%' }}
-                    />
-                </DataTable>
-            </div>
+                            <Column field="version" header="Version" style={{ width: '5%' }} sortable />
+                            <Column field="PMID" header="PMID" style={{ width: '5%' }} sortable />
+                            <Column
+                                field="description"
+                                header="Description"
+                                style={{ width: '20%' }}
+                                body={rowData => (
+                                    <p
+                                        className="line-clamp-4 text-bodySm text-text-secondary whitespace-pre-line"
+                                        dangerouslySetInnerHTML={{ __html: rowData?.description || '' }}
+                                    />
+                                )}
+                            />
+                            <Column field="total_samples" header="Total Samples" style={{ width: '8%' }} sortable />
+                            <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
+                            <Column field="total_drugs" header="Total Drugs" style={{ width: '8%' }} sortable />
+                            <Column
+                                field="total_cell_lines"
+                                header="Total Cell Lines"
+                                style={{ width: '8%' }}
+                                sortable
+                            />
+                            <Column
+                                header="Data Layers"
+                                style={{ width: '20%' }}
+                                body={rowData => (
+                                    <div className="flex gap-1.5 flex-wrap">
+                                        {(rowData?.data_layers || []).map((layer: string, ind: number) => (
+                                            <span
+                                                key={ind}
+                                                className="rounded-md bg-primary px-2.5 py-1 text-caption text-white font-medium shadow-xs"
+                                            >
+                                                {layer}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            />
+                        </DataTable>
+                    </div>
+
+                    <div className="flex flex-col gap-4 w-full">
+                        <h1 className="text-heading2Xl font-semibold text-text-primary text-left">
+                            Preclinical Datasets
+                        </h1>
+                        <DataTable
+                            value={clinicalDatasets}
+                            loading={loading}
+                            sortMode="single"
+                            sortField="name"
+                            sortOrder={1}
+                            size="small"
+                            showGridlines={true}
+                            stripedRows
+                            className="shadow-card rounded-md overflow-hidden bg-white"
+                        >
+                            <Column
+                                field="name"
+                                header="Object Name"
+                                style={{ width: '5%' }}
+                                body={rowData =>
+                                    rowData.link ? (
+                                        <a
+                                            href={rowData.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-headingSm text-primary font-bold hover:underline"
+                                        >
+                                            {rowData.name}
+                                        </a>
+                                    ) : (
+                                        <h3 className="text-headingSm text-primary font-bold">{rowData.name}</h3>
+                                    )
+                                }
+                                sortable
+                            />
+                            <Column field="version" header="Version" style={{ width: '5%' }} sortable />
+                            <Column field="PMID" header="PMID" style={{ width: '5%' }} sortable />
+                            <Column
+                                field="description"
+                                header="Description"
+                                style={{ width: '20%' }}
+                                body={rowData => (
+                                    <p
+                                        className="line-clamp-4 text-bodySm text-text-secondary whitespace-pre-line"
+                                        dangerouslySetInnerHTML={{ __html: rowData?.description || '' }}
+                                    />
+                                )}
+                            />
+                            <Column field="total_samples" header="Total Samples" style={{ width: '8%' }} sortable />
+                            <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
+                            <Column field="total_drugs" header="Total Drugs" style={{ width: '8%' }} sortable />
+                            <Column
+                                field="total_cell_lines"
+                                header="Total Cell Lines"
+                                style={{ width: '8%' }}
+                                sortable
+                            />
+                            <Column
+                                header="Data Layers"
+                                style={{ width: '20%' }}
+                                body={rowData => (
+                                    <div className="flex gap-1.5 flex-wrap">
+                                        {(rowData?.data_layers || []).map((layer: string, ind: number) => (
+                                            <span
+                                                key={ind}
+                                                className="rounded-md bg-primary px-2.5 py-1 text-caption text-white font-medium shadow-xs"
+                                            >
+                                                {layer}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            />
+                        </DataTable>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
