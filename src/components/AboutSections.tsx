@@ -27,36 +27,16 @@ export const Overview: React.FC<SectionProps> = ({ scrollTarget }) => {
                     </h3>
                     <div className="flex flex-col gap-4">
                         <p className="text-bodyLg font-light xs:text-bodyMd">
-                            The Soft Tissue Sarcoma (STS) Integrated Data Portal aims to establish a scalable,
-                            reproducible, and FAIR-compliant research platform for the harmonization, integration,
-                            exploration, and analysis of sarcoma datasets spanning clinical cohorts, preclinical model
-                            systems, molecular profiles, imaging resources, and therapeutic response data. The platform
-                            is designed to support translational sarcoma research by enabling seamless integration of
-                            diverse data sources within a unified analytical environment.
+                            The Soft Tissue Sarcoma Integrated Research Platform is a harmonized research environment
+                            for exploring clinical and preclinical sarcoma datasets across molecular, pharmacogenomic,
+                            imaging, pathology, and clinical data layers. The platform supports interactive exploration,
+                            translational analyses, biomarker discovery, cross-cohort analysis, and reproducible
+                            research workflows.
                         </p>
                         <p className="text-bodyLg font-light xs:text-bodyMd">
-                            Given the biological heterogeneity of STS and the fragmented nature of existing sarcoma
-                            resources, the platform addresses major challenges associated with cross-institutional data
-                            integration, lack of standardization, and inconsistent analytical workflows. Through
-                            standardized metadata structures, harmonized identifiers, and interoperable computational
-                            pipelines, the portal will facilitate reproducible, collaborative, and data-driven sarcoma
-                            research across institutions and research programs.
-                        </p>
-                        <p className="text-bodyLg font-light xs:text-bodyMd">
-                            The platform will integrate diverse data types, including transcriptomic, genomic,
-                            proteomic, imaging, clinical, and pharmacogenomic datasets derived from both patient cohorts
-                            and preclinical sarcoma models. Through interactive visualization, advanced filtering,
-                            cohort exploration, biomarker discovery, translational analytics, and controlled data
-                            access, the portal will support investigations into disease biology, therapeutic response,
-                            patient outcomes, and precision oncology applications in soft tissue sarcoma.
-                        </p>
-                        <p className="text-bodyLg font-light xs:text-bodyMd">
-                            Importantly, the portal will be developed in accordance with FAIR data principles to ensure
-                            that sarcoma-related datasets are Findable, Accessible, Interoperable, and Reusable. By
-                            promoting data harmonization, reproducibility, and long-term accessibility, the STS
-                            Integrated Data Portal aims to establish a sustainable research infrastructure that
-                            accelerates biomarker discovery, therapeutic development, and collaborative translational
-                            sarcoma research.
+                            The platform is being developed to improve data integration and standardization across
+                            heterogeneous sarcoma resources while supporting transparent data provenance, controlled
+                            access, and FAIR and reproducible research practices.
                         </p>
                     </div>
                 </div>
@@ -69,11 +49,14 @@ export const Overview: React.FC<SectionProps> = ({ scrollTarget }) => {
                     Platform Goals
                 </h3>
                 <div className="flex flex-col gap-4">
-                    <p className="text-bodyLg font-light xs:text-bodyMd">
-                        To centralize, harmonize, and enable integrated exploration of clinical, molecular, imaging, and
-                        therapeutic response data for soft tissue sarcoma research, biomarker discovery, and
-                        translational oncology applications.
-                    </p>
+                    <ul className="text-bodyLg font-light xs:text-bodyMd list-disc pl-6">
+                        <li>Integrate clinical and preclinical sarcoma datasets.</li>
+                        <li>Harmonize metadata and identifiers across data sources.</li>
+                        <li>Support cohort exploration and cross-dataset analyses.</li>
+                        <li>Enable biomarker, genomic,survival, and pharmacogenomic investigations.</li>
+                        <li>Support reproducible and transparent analytical workflows.</li>
+                        <li>Enable future governed AI-enabled research workflows.</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -101,7 +84,10 @@ export const Functionality: React.FC<SectionProps> = ({ scrollTarget }) => {
                     Visualizations
                 </h3>
                 <div className="flex flex-col gap-4">
-                    <p className="text-bodyLg font-light xs:text-bodyMd"></p>
+                    <p className="text-bodyLg font-light xs:text-bodyMd">
+                        The platform includes several plots to visualize the various molecular, H&E, and treatment
+                        response data layers.{' '}
+                    </p>
                 </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -112,7 +98,7 @@ export const Functionality: React.FC<SectionProps> = ({ scrollTarget }) => {
                     Analyses
                 </h3>
                 <div className="flex flex-col gap-4">
-                    <p className="text-bodyLg font-light xs:text-bodyMd"></p>
+                    <p className="text-bodyMd font-light xs:text-bodySm text-gray-500">Coming soon!</p>
                 </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -177,15 +163,6 @@ export const Data: React.FC<SectionProps> = ({ scrollTarget }) => {
                     </a>
                     ,{' '}
                     <a
-                        href="https://orcestra.ca/pset/61bb74e7308ac5003a648fbd"
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="text-blue-600 font-semibold"
-                    >
-                        GDSC1
-                    </a>
-                    ,{' '}
-                    <a
                         href="https://orcestra.ca/pset/61bb751a308ac5003a648fbe"
                         target="_blank"
                         rel="noreferrer noopener"
@@ -193,7 +170,7 @@ export const Data: React.FC<SectionProps> = ({ scrollTarget }) => {
                     >
                         GDSC2
                     </a>
-                    , and{' '}
+                    ,{' '}
                     <a
                         href="https://orcestra.ca/pset/60c3dc783940cf1de1bbc298"
                         target="_blank"
@@ -202,8 +179,17 @@ export const Data: React.FC<SectionProps> = ({ scrollTarget }) => {
                     >
                         gCSI
                     </a>
-                    for the pre clinical datasets, with plans to eventually add NCI Sarcoma, PRISM, and CRISPR. For
-                    clinical datasets the platform only includes{' '}
+                    , and{' '}
+                    <a
+                        href="https://orcestra.ca/pset/611d353d01d3364d6cb9978f"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="text-blue-600 font-semibold"
+                    >
+                        PRISM
+                    </a>{' '}
+                    for the pre clinical datasets, with plans to eventually add NCI Sarcoma, and CRISPR. For clinical
+                    datasets the platform only includes{' '}
                     <a
                         href="https://pubmed.ncbi.nlm.nih.gov/29100075/"
                         target="_blank"
@@ -212,25 +198,7 @@ export const Data: React.FC<SectionProps> = ({ scrollTarget }) => {
                     >
                         TCGA SARC
                     </a>{' '}
-                    with plans to include Stanford's{' '}
-                    <a
-                        href="https://doi.org/10.1016/j.gdata.2015.06.029"
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="text-blue-600 font-semibold"
-                    >
-                        GSE45510
-                    </a>{' '}
-                    and Heidelberg University Hospital's{' '}
-                    <a
-                        href="https://doi.org/10.1038/s41467-017-02602-0"
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="text-blue-600 font-semibold"
-                    >
-                        EGAS00001002437
-                    </a>
-                    .
+                    with plans to include a private dataset from Stanford.
                 </p>
             </div>
         </div>
