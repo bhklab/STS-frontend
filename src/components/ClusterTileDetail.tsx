@@ -36,6 +36,13 @@ interface ClusterTileDetailProps {
     onClose: () => void;
 }
 
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const getTileImageUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `${apiBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 const ClusterTileDetail: React.FC<ClusterTileDetailProps> = ({ cluster, color, onClose }) => {
     const [selectedTile, setSelectedTile] = useState<ExemplarTile | null>(null);
 
@@ -87,8 +94,8 @@ const ClusterTileDetail: React.FC<ClusterTileDetailProps> = ({ cluster, color, o
                         <div className="p-2 bg-primary/10 rounded-md text-primary">
                             <Activity className="w-5 h-5" />
                         </div>
-                        <div>
-                            <div className="text-caption text-text-secondary font-medium">Dominant Histology</div>
+                        <div className="flex flex-row gap-2 items-center">
+                            <div className="text-caption text-text-secondary font-medium">Dominant Histology:</div>
                             <div
                                 className="text-headingSm font-bold text-text-primary truncate max-w-[200px]"
                                 title={cluster.dominant_histology}
@@ -119,7 +126,7 @@ const ClusterTileDetail: React.FC<ClusterTileDetailProps> = ({ cluster, color, o
                             {/* Image container */}
                             <div className="relative w-full aspect-square bg-slate-100 overflow-hidden">
                                 <img
-                                    src={tile.crop_url}
+                                    src={getTileImageUrl(tile.crop_url)}
                                     alt={`Tile ${tile.tile_id}`}
                                     loading="lazy"
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -173,7 +180,7 @@ const ClusterTileDetail: React.FC<ClusterTileDetailProps> = ({ cluster, color, o
 
                         <div className="w-full aspect-square bg-slate-100 rounded-md overflow-hidden border border-border">
                             <img
-                                src={selectedTile.crop_url}
+                                src={getTileImageUrl(selectedTile.crop_url)}
                                 alt="High-resolution tile"
                                 className="w-full h-full object-cover"
                             />
@@ -189,15 +196,19 @@ const ClusterTileDetail: React.FC<ClusterTileDetailProps> = ({ cluster, color, o
                                 {selectedTile.patient_id}
                             </div>
                             <div>
-                                <span className="font-semibold text-text-secondary">Coordinates: </span>(
+                                <span className="font-semibold text-text-secondary">Slide Coord: </span>(
                                 {Math.round(selectedTile.x)}, {Math.round(selectedTile.y)})
+                            </div>
+                            <div>
+                                <span className="font-semibold text-text-secondary">PCA Position: </span>
+                                PC-1: {selectedTile.umap1 >= 0 ? '+' : ''}{selectedTile.umap1.toFixed(3)}, PC-2: {selectedTile.umap2 >= 0 ? '+' : ''}{selectedTile.umap2.toFixed(3)}
                             </div>
                             <div>
                                 <span className="font-semibold text-text-secondary">Histology: </span>
                                 {selectedTile.histology || 'N/A'}
                             </div>
                             <div>
-                                <span className="font-semibold text-text-secondary">Distance: </span>
+                                <span className="font-semibold text-text-secondary">Centroid Dist: </span>
                                 {selectedTile.dist_to_centroid.toFixed(4)}
                             </div>
                             <div>

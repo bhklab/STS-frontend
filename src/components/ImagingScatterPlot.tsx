@@ -207,8 +207,9 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
                                 <span style="color: #94a3b8; font-size: 11px;">#${d.tile_index}</span>
                             </div>
                             <div><span style="color: #94a3b8;">Patient:</span> <strong>${d.patient_id}</strong></div>
-                            <div><span style="color: #94a3b8;">Slide:</span> ${d.slide_id.slice(0, 18)}...</div>
+                            <div><span style="color: #94a3b8;">Slide:</span> <span style="font-family: inherit; font-size: 11px; word-break: break-all;"><strong>${d.slide_id}</strong></span></div>
                             <div><span style="color: #94a3b8;">Histology:</span> <strong>${d.histology || 'Unknown'}</strong></div>
+                            <div><span style="color: #94a3b8;">PC-1:</span> <span style="font-family: monospace; color: #fff;">${d.umap1 >= 0 ? '+' : ''}${d.umap1.toFixed(3)}</span> &nbsp;|&nbsp; <span style="color: #94a3b8;">PC-2:</span> <span style="font-family: monospace; color: #fff;">${d.umap2 >= 0 ? '+' : ''}${d.umap2.toFixed(3)}</span></div>
                             <div><span style="color: #94a3b8;">Centroid Dist:</span> ${d.dist_to_centroid.toFixed(3)}</div>
                             <div style="margin-top: 5px; font-size: 10px; color: #38bdf8;">
                                 Click point to inspect exemplar tiles
