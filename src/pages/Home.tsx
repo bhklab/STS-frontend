@@ -244,7 +244,7 @@ const Home: React.FC = () => {
                             <AnimatedCounter end={landingPageStats.total_pre_clinical_datasets} duration={1300} />
                         </span>
                         <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                            Preclinical Datasets
+                            Pre Clinical Datasets
                         </span>
                     </div>
                     <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">

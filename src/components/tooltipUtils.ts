@@ -28,9 +28,9 @@ export function buildTooltipHtml(
     if (point.disease_descriptions != null) lines.push(`<strong>Disease: </strong>${point.disease_descriptions}`);
 
     // Drug metadata
-    if (point.fda_approval != null) lines.push(`<strong>FDA Approved: </strong>${point.fda_approval ? 'Yes' : 'No'}`);
-    if (point.mechanism_action_type != null) lines.push(`<strong>Action Type: </strong>${point.mechanism_action_type}`);
-    if (point.mechanism_of_action != null) lines.push(`<strong>Mechanism: </strong>${point.mechanism_of_action}`);
+    if (point.fda_approval != null) lines.push(`<strong>FDA Approved Drug: </strong>${point.fda_approval ? 'True' : 'False'}`);
+    if (point.mechanism_action_type != null) lines.push(`<strong>Mechanism of Action Type: </strong>${point.mechanism_action_type}`);
+    if (point.mechanism_of_action != null) lines.push(`<strong>Mechanism of Action: </strong>${point.mechanism_of_action}`);
 
     return lines.join('<br/>');
 }
