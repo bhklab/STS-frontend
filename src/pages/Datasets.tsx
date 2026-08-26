@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import axios from 'axios';
+import apiClient from '../api/axiosClient';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Chart } from 'primereact/chart';
@@ -43,7 +43,7 @@ const Datasets: React.FC = () => {
         const getDatasetStatistics = async () => {
             setLoading(true);
             try {
-                const res = await axios.get('/api/datasets/statistics/dataset-page');
+                const res = await apiClient.get('/api/datasets/statistics/dataset-page');
                 setClinicalDatasets(res.data.clinical_datasets || []);
                 setPreclinicalDatasets(res.data.preclinical_datasets || []);
             } catch (error) {

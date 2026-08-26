@@ -8,7 +8,7 @@ import ViolinPlot from '../components/ViolinPlot';
 import { Tooltip } from 'primereact/tooltip';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { MultiSelect } from 'primereact/multiselect';
-import axios from 'axios';
+import apiClient from '../api/axiosClient';
 
 interface Dataset {
     id: number;
@@ -183,7 +183,7 @@ const Visualizations: React.FC = () => {
 
     useEffect(() => {
         const getDatasets = async () => {
-            const res = await axios.get('/api/datasets/all');
+            const res = await apiClient.get('/api/datasets/all');
             const clinicalList: Dataset[] = [];
             const preclinicalList: Dataset[] = [];
             res.data.forEach((d: Dataset) => {
@@ -229,7 +229,7 @@ const Visualizations: React.FC = () => {
     };
 
     const getDataLayers = async (dataset_id: number) => {
-        const res = await axios.get(`/api/datasets/data-layers`, {
+        const res = await apiClient.get(`/api/datasets/data-layers`, {
             params: {
                 dataset_id: dataset_id
             }
@@ -275,7 +275,7 @@ const Visualizations: React.FC = () => {
         setRetrievingGenes(true);
         setAvailableGenes([]);
         try {
-            const res = await axios.get(`/api/datasets/genes`, {
+            const res = await apiClient.get(`/api/datasets/genes`, {
                 params: {
                     dataset_id: dataset_id,
                     molecular_profile: layer
@@ -296,7 +296,7 @@ const Visualizations: React.FC = () => {
             setPlotData({});
             return;
         }
-        const res = await axios.get(`/api/data-layer/molecular-profile`, {
+        const res = await apiClient.get(`/api/data-layer/molecular-profile`, {
             params: {
                 dataset_id: dataset.id,
                 molecular_profile: layer,
@@ -323,7 +323,7 @@ const Visualizations: React.FC = () => {
         setRetrievingDrugs(true);
         setAvailableDrugs([]);
         try {
-            const res = await axios.get(`/api/datasets/drugs`, {
+            const res = await apiClient.get(`/api/datasets/drugs`, {
                 params: {
                     dataset_id: dataset_id
                 }
@@ -343,7 +343,7 @@ const Visualizations: React.FC = () => {
             setPlotData({});
             return;
         }
-        const res = await axios.get(`/api/data-layer/treatment-response`, {
+        const res = await apiClient.get(`/api/data-layer/treatment-response`, {
             params: {
                 dataset_id: dataset.id,
                 drug: drugs.map((drug: Drug) => drug.treatment_id)

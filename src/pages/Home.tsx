@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../api/axiosClient';
 import { useNavigate } from 'react-router';
 import { HardDrive, ChartLine, BotMessageSquare, CodeXml } from 'lucide-react';
 
@@ -170,7 +170,7 @@ const Home: React.FC = () => {
 
     useEffect(() => {
         const getLandingPageStats = async () => {
-            const res = await axios.get(`/api/datasets/statistics/landing-page`);
+            const res = await apiClient.get(`/api/datasets/statistics/landing-page`);
             console.log(res.data);
             setLandingPageStats(res.data);
         };
