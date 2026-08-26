@@ -45,7 +45,7 @@ const AGE_RANGES: AgeRange[] = [
     { label: '65-74', min: 65, max: 74 },
     { label: '75-84', min: 75, max: 84 },
     { label: '85-94', min: 85, max: 94 },
-    { label: '95+', min: 95, max: Infinity }
+    { label: '95+', min: 95, max: 110 }
 ];
 
 const Visualizations: React.FC = () => {
@@ -679,7 +679,9 @@ const Visualizations: React.FC = () => {
                     ) : (
                         <div className="flex flex-1 justify-center items-center h-full min-h-[400px]">
                             <p className="text-gray-400 font-medium">
-                                Please select {layer === 'Treatment Response' ? 'drugs' : `${entityLabel.toLowerCase()}s`} to display visualization
+                                Please select{' '}
+                                {layer === 'Treatment Response' ? 'drugs' : `${entityLabel.toLowerCase()}s`} to display
+                                visualization
                             </p>
                         </div>
                     )}
