@@ -10,8 +10,6 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { MultiSelect } from 'primereact/multiselect';
 import axios from 'axios';
 
-// Dummy data for multiple genes
-
 interface Dataset {
     id: number;
     name: string;
@@ -102,6 +100,14 @@ const Visualizations: React.FC = () => {
     }, [isTreatment, layer]);
     const valueLabel = isTreatment ? (responseType === 'IC50' ? 'IC50 Response' : 'AAC Response') : 'Value'; // Defining y-axis values
 
+    const hasActiveFilters =
+        filterSex.length > 0 ||
+        filterAge.length > 0 ||
+        filterSecondLevel.length > 0 ||
+        filterRace.length > 0 ||
+        filterHistology.length > 0 ||
+        filterFdaApproval !== null;
+
     // Format data for plots based on layer and responseType
     const formattedPlotData = useMemo<Record<string, PlotDataPoint[]>>(() => {
         if (!plotData || Object.keys(plotData).length === 0) return {};
@@ -129,7 +135,17 @@ const Visualizations: React.FC = () => {
         const filtered: Record<string, PlotDataPoint[]> = {};
         for (const [key, points] of Object.entries(data)) {
             const fp = points.filter(p => {
-                if (filterSex.length > 0 && !filterSex.includes(String(p.sex ?? ''))) return false;
+                if (filterSex.length > 0) {
+                    const s = String(p.sex ?? '').toUpperCase();
+                    const match = filterSex.some(sel => {
+                        const u = sel.toUpperCase();
+                        if (u === s) return true;
+                        if ((u === 'MALE' || u === 'M') && (s === 'M' || s === 'MALE')) return true;
+                        if ((u === 'FEMALE' || u === 'F') && (s === 'F' || s === 'FEMALE')) return true;
+                        return false;
+                    });
+                    if (!match) return false;
+                }
                 if (filterAge.length > 0) {
                     if (p.age == null || p.age === '' || isNaN(Number(p.age))) return false;
                     const ageNum = Number(p.age);
@@ -144,7 +160,7 @@ const Visualizations: React.FC = () => {
                 if (filterRace.length > 0 && !filterRace.includes(String(p.race ?? ''))) return false;
                 if (filterHistology.length > 0 && !filterHistology.includes(String(p.histology ?? ''))) return false;
                 if (filterFdaApproval !== null) {
-                    const approved = p.fda_approval === true || p.fda_approval === 'True';
+                    const approved = Boolean(p.fda_approval);
                     if (filterFdaApproval === 'Yes' && !approved) return false;
                     if (filterFdaApproval === 'No' && approved) return false;
                 }
@@ -168,14 +184,20 @@ const Visualizations: React.FC = () => {
     useEffect(() => {
         const getDatasets = async () => {
             const res = await axios.get('/api/datasets/all');
-            res.data.forEach((dataset: Dataset) => {
-                if (dataset.clinical) {
-                    setClinicalDatasets(prev => [...prev, dataset]);
+            const clinicalList: Dataset[] = [];
+            const preclinicalList: Dataset[] = [];
+            res.data.forEach((d: Dataset) => {
+                if (d.clinical) {
+                    clinicalList.push(d);
                 } else {
-                    setPreclinicalDatasets(prev => [...prev, dataset]);
+                    preclinicalList.push(d);
                 }
             });
-            setDataset(res.data[0]);
+            setClinicalDatasets(clinicalList);
+            setPreclinicalDatasets(preclinicalList);
+            if (res.data.length > 0) {
+                setDataset(res.data[0]);
+            }
         };
         getDatasets();
     }, []);
@@ -204,7 +226,6 @@ const Visualizations: React.FC = () => {
         setSelectedDrugs([]);
         setPlotData({});
         clearFilters();
-        getDataLayers(dataset.id);
     };
 
     const getDataLayers = async (dataset_id: number) => {
@@ -227,8 +248,20 @@ const Visualizations: React.FC = () => {
         setAvailableLayers(res.data);
     };
 
+    const handleToggleClinical = (isClinical: boolean) => {
+        setClinical(isClinical);
+        const targetList = isClinical ? clinicalDatasets : preclinicalDatasets;
+        if (targetList.length > 0) {
+            selectDataset(targetList[0]);
+        }
+    };
+
     const selectDataLayer = async (layer: String) => {
         setLayer(layer);
+        setSelectedGenes([]);
+        setSelectedDrugs([]);
+        setPlotData({});
+        clearFilters();
         if (!dataset) return;
         if (layer === 'Treatment Response') {
             if (!responseType) setResponseType('AAC');
@@ -236,22 +269,25 @@ const Visualizations: React.FC = () => {
         } else {
             getAvailableGenes(dataset.id, layer);
         }
-        setSelectedGenes([]);
-        setSelectedDrugs([]);
-        setPlotData({});
-        clearFilters();
     };
 
     const getAvailableGenes = async (dataset_id: number, layer: String) => {
         setRetrievingGenes(true);
-        const res = await axios.get(`/api/datasets/genes`, {
-            params: {
-                dataset_id: dataset_id,
-                molecular_profile: layer
-            }
-        });
-        setAvailableGenes(res.data);
-        setRetrievingGenes(false);
+        setAvailableGenes([]);
+        try {
+            const res = await axios.get(`/api/datasets/genes`, {
+                params: {
+                    dataset_id: dataset_id,
+                    molecular_profile: layer
+                }
+            });
+            setAvailableGenes(res.data);
+        } catch (err) {
+            console.error('Failed to retrieve genes/antigens/probes:', err);
+            setAvailableGenes([]);
+        } finally {
+            setRetrievingGenes(false);
+        }
     };
 
     const selectGenes = async (genes: Gene[]) => {
@@ -285,13 +321,20 @@ const Visualizations: React.FC = () => {
 
     const getAvailableDrugs = async (dataset_id: number) => {
         setRetrievingDrugs(true);
-        const res = await axios.get(`/api/datasets/drugs`, {
-            params: {
-                dataset_id: dataset_id
-            }
-        });
-        setAvailableDrugs(res.data);
-        setRetrievingDrugs(false);
+        setAvailableDrugs([]);
+        try {
+            const res = await axios.get(`/api/datasets/drugs`, {
+                params: {
+                    dataset_id: dataset_id
+                }
+            });
+            setAvailableDrugs(res.data);
+        } catch (err) {
+            console.error('Failed to retrieve drugs:', err);
+            setAvailableDrugs([]);
+        } finally {
+            setRetrievingDrugs(false);
+        }
     };
 
     const selectDrugs = async (drugs: Drug[]) => {
@@ -324,7 +367,7 @@ const Visualizations: React.FC = () => {
                         <div className="flex flex-row gap-4 justify-center">
                             <div
                                 className={`p-2 rounded-md cursor-pointer ${!clinical ? 'bg-subsection-1' : ''} hover:bg-subsection-1 preclinical-icon`}
-                                onClick={() => setClinical(false)}
+                                onClick={() => handleToggleClinical(false)}
                                 data-pr-tooltip="Pre-clinical data"
                                 data-pr-position="top"
                                 data-pr-at="center top-10"
@@ -334,7 +377,7 @@ const Visualizations: React.FC = () => {
 
                             <div
                                 className={`p-2 rounded-md cursor-pointer ${clinical ? 'bg-subsection-1' : ''} hover:bg-subsection-1 clinical-icon`}
-                                onClick={() => setClinical(true)}
+                                onClick={() => handleToggleClinical(true)}
                                 data-pr-tooltip="Clinical data"
                                 data-pr-position="top"
                                 data-pr-at="center top-10"
@@ -438,13 +481,22 @@ const Visualizations: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Dynamic Filters */}
+                    {/* Optional Filters */}
                     {Object.keys(plotData).length > 0 && (
                         <>
-                            <div className="border-t border-border/50 pt-3 mt-1">
+                            <div className="flex items-center justify-between border-t border-border/50 pt-3 mt-1">
                                 <span className="text-xs font-medium text-text-primary/60 uppercase tracking-wide">
                                     Optional Filters
                                 </span>
+                                {hasActiveFilters && (
+                                    <button
+                                        type="button"
+                                        onClick={clearFilters}
+                                        className="text-xs text-primary hover:underline font-medium cursor-pointer"
+                                    >
+                                        Clear all
+                                    </button>
+                                )}
                             </div>
 
                             {/* Sex filter — available for both pre-clinical & clinical */}
@@ -604,29 +656,31 @@ const Visualizations: React.FC = () => {
                         visualization === 'Scatter Plot' ? (
                             <DotPlot
                                 data={formattedPlotData}
-                                treatment={isTreatment}
+                                treatment={layer === 'Treatment Response'}
                                 entityLabel={entityLabel}
                                 valueLabel={valueLabel}
                             />
                         ) : visualization === 'Heatmap' ? (
                             <Heatmap
                                 data={formattedPlotData}
-                                treatment={isTreatment}
+                                treatment={layer === 'Treatment Response'}
                                 entityLabel={entityLabel}
                                 valueLabel={valueLabel}
                             />
                         ) : (
                             <ViolinPlot
                                 data={formattedPlotData}
-                                layerName={layer as string}
-                                treatment={isTreatment}
+                                layerName={layer.toString()}
+                                treatment={layer === 'Treatment Response'}
                                 entityLabel={entityLabel}
                                 valueLabel={valueLabel}
                             />
                         )
                     ) : (
-                        <div className="flex flex-row justify-center items-center w-full">
-                            <h1 className="font-light text-text-primary">Make a data selection to visualize</h1>
+                        <div className="flex flex-1 justify-center items-center h-full min-h-[400px]">
+                            <p className="text-gray-400 font-medium">
+                                Please select {layer === 'Treatment Response' ? 'drugs' : `${entityLabel.toLowerCase()}s`} to display visualization
+                            </p>
                         </div>
                     )}
                 </div>
