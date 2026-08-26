@@ -224,9 +224,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
             .attr('fill', 'transparent')
             .style('cursor', 'pointer')
             .on('mouseenter', (_event, d) => {
-                tooltip
-                    .html(buildTooltipHtml(currentEntityLabel, d.gene, currentValueLabel, d))
-                    .style('opacity', '1');
+                tooltip.html(buildTooltipHtml(currentEntityLabel, d.gene, currentValueLabel, d)).style('opacity', '1');
             })
             .on('mousemove', event => {
                 const [mx, my] = d3.pointer(event, svgRef.current!.parentElement!);
@@ -353,10 +351,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
                 </div>
             )}
 
-            <div
-                ref={containerRef}
-                style={{ position: 'relative', width: '100%', height: height || 'auto', overflow: 'hidden' }}
-            >
+            <div ref={containerRef} style={{ position: 'relative', width: '100%', height: height || 'auto' }}>
                 <svg ref={svgRef} style={{ position: 'absolute', top: 0, left: 0 }} />
             </div>
         </div>

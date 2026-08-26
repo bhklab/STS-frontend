@@ -2,9 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Hospital, Microscope } from 'lucide-react';
 import DotPlot from '../components/DotPlot';
-import { type PlotDataPoint } from '../components/plotConstants';
+import { type PlotDataPoint, GENE_COLORS } from '../components/plotConstants';
 import Heatmap from '../components/Heatmap';
 import ViolinPlot from '../components/ViolinPlot';
+import ImagingScatterPlot from '../components/ImagingScatterPlot';
+import ClusterTileDetail, { type ExemplarTile, type ImagingCluster } from '../components/ClusterTileDetail';
 import { Tooltip } from 'primereact/tooltip';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { MultiSelect } from 'primereact/multiselect';
@@ -79,6 +81,18 @@ const Visualizations: React.FC = () => {
     const [selectedDrugs, setSelectedDrugs] = useState<Drug[]>([]);
     const [retrievingDrugs, setRetrievingDrugs] = useState(false);
 
+    // Imaging State
+    const [imagingData, setImagingData] = useState<{
+        points: ExemplarTile[];
+        clusters: ImagingCluster[];
+        total_tiles: number;
+        n_clusters: number;
+    } | null>(null);
+    const [retrievingImaging, setRetrievingImaging] = useState(false);
+    const [selectedClusterId, setSelectedClusterId] = useState<number | null>(null);
+    const [nClusters, setNClusters] = useState<number>(10);
+    const [imagingColorBy, setImagingColorBy] = useState<'cluster' | 'histology' | 'tissue'>('cluster');
+
     // Plot Data state
     const [plotData, setPlotData] = useState<Record<string, PlotDataPoint[]>>({});
 
@@ -91,13 +105,15 @@ const Visualizations: React.FC = () => {
     const [filterHistology, setFilterHistology] = useState<string[]>([]);
 
     const isTreatment = layer === 'Treatment Response'; // True, if 'Treatment Response' is selected
+    const isImaging = layer === 'Imaging'; // True, if 'Imaging' is selected
     const entityLabel = useMemo(() => {
         if (isTreatment) return 'Drug';
+        if (isImaging) return 'Morphology';
         if (layer === 'RPPA') return 'Antigen';
         if (layer === 'MiRNA') return 'miRNA';
         if (layer === 'Methylation') return 'Probe';
         return 'Gene';
-    }, [isTreatment, layer]);
+    }, [isTreatment, isImaging, layer]);
     const valueLabel = isTreatment ? (responseType === 'IC50' ? 'IC50 Response' : 'AAC Response') : 'Value'; // Defining y-axis values
 
     const hasActiveFilters =
@@ -225,23 +241,50 @@ const Visualizations: React.FC = () => {
         setSelectedGenes([]);
         setSelectedDrugs([]);
         setPlotData({});
+        setImagingData(null);
+        setSelectedClusterId(null);
         clearFilters();
+    };
+
+    const getImagingClustering = async (dataset_id: number, numClusters: number = 10) => {
+        setRetrievingImaging(true);
+        setImagingData(null);
+        setSelectedClusterId(null);
+        try {
+            const res = await apiClient.get('/api/data-layer/imaging/clustering', {
+                params: {
+                    dataset_id: dataset_id,
+                    sample_size: 5000,
+                    n_clusters: numClusters,
+                },
+            });
+            setImagingData(res.data);
+        } catch (err) {
+            console.error('Failed to retrieve imaging clustering:', err);
+            setImagingData(null);
+        } finally {
+            setRetrievingImaging(false);
+        }
     };
 
     const getDataLayers = async (dataset_id: number) => {
         const res = await apiClient.get(`/api/datasets/data-layers`, {
             params: {
-                dataset_id: dataset_id
-            }
+                dataset_id: dataset_id,
+            },
         });
         setSelectedGenes([]);
         setSelectedDrugs([]);
         setPlotData({});
+        setImagingData(null);
+        setSelectedClusterId(null);
         const firstLayer = res.data[0];
         setLayer(firstLayer);
         if (firstLayer === 'Treatment Response') {
             if (!responseType) setResponseType('AAC');
             getAvailableDrugs(dataset_id);
+        } else if (firstLayer === 'Imaging') {
+            getImagingClustering(dataset_id, nClusters);
         } else {
             getAvailableGenes(dataset_id, firstLayer);
         }
@@ -261,11 +304,15 @@ const Visualizations: React.FC = () => {
         setSelectedGenes([]);
         setSelectedDrugs([]);
         setPlotData({});
+        setImagingData(null);
+        setSelectedClusterId(null);
         clearFilters();
         if (!dataset) return;
         if (layer === 'Treatment Response') {
             if (!responseType) setResponseType('AAC');
             getAvailableDrugs(dataset.id);
+        } else if (layer === 'Imaging') {
+            getImagingClustering(dataset.id, nClusters);
         } else {
             getAvailableGenes(dataset.id, layer);
         }
@@ -436,7 +483,64 @@ const Visualizations: React.FC = () => {
                             />
                         </div>
                     )}
-                    {layer !== 'Treatment Response' ? (
+                    {layer === 'Imaging' ? (
+                        <>
+                            <div className="flex">
+                                <Dropdown
+                                    value={nClusters}
+                                    onChange={e => {
+                                        setNClusters(e.value);
+                                        if (dataset) getImagingClustering(dataset.id, e.value);
+                                    }}
+                                    options={[
+                                        { label: '5 Clusters', value: 5 },
+                                        { label: '8 Clusters', value: 8 },
+                                        { label: '10 Clusters', value: 10 },
+                                        { label: '12 Clusters', value: 12 },
+                                        { label: '15 Clusters', value: 15 },
+                                    ]}
+                                    optionLabel="label"
+                                    placeholder="Select clusters"
+                                    className="w-full wrap:w-14rem"
+                                />
+                            </div>
+                            <div className="flex">
+                                <Dropdown
+                                    value={imagingColorBy}
+                                    onChange={e => setImagingColorBy(e.value)}
+                                    options={[
+                                        { label: 'Color by Cluster', value: 'cluster' },
+                                        { label: 'Color by Histology', value: 'histology' },
+                                        { label: 'Color by Tissue', value: 'tissue' },
+                                    ]}
+                                    optionLabel="label"
+                                    placeholder="Color by"
+                                    className="w-full wrap:w-14rem"
+                                />
+                            </div>
+                        </>
+                    ) : layer === 'Treatment Response' ? (
+                        <div className="flex gap-2 items-center max-w-[270px]">
+                            <MultiSelect
+                                value={selectedDrugs}
+                                onChange={e => selectDrugs(e.value)}
+                                options={availableDrugs}
+                                optionLabel="treatment_id"
+                                dataKey="treatment_id"
+                                filter
+                                selectionLimit={20}
+                                virtualScrollerOptions={{ itemSize: 40 }}
+                                display="chip"
+                                placeholder="Select a drug"
+                                className="w-full wrap:w-14rem"
+                            />
+                            {retrievingDrugs && (
+                                <div className="flex flex-row justify-center">
+                                    <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
                         <div className="flex gap-2 items-center max-w-[270px]">
                             <MultiSelect
                                 value={selectedGenes}
@@ -453,27 +557,6 @@ const Visualizations: React.FC = () => {
                                 className="w-full wrap:w-14rem"
                             />
                             {retrievingGenes && (
-                                <div className="flex flex-row justify-center">
-                                    <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="flex gap-2 items-center max-w-[270px]">
-                            <MultiSelect
-                                value={selectedDrugs}
-                                onChange={e => selectDrugs(e.value)}
-                                options={availableDrugs}
-                                optionLabel="treatment_id"
-                                dataKey="treatment_id"
-                                filter
-                                selectionLimit={20}
-                                virtualScrollerOptions={{ itemSize: 40 }}
-                                display="chip"
-                                placeholder="Select a drug"
-                                className="w-full wrap:w-14rem"
-                            />
-                            {retrievingDrugs && (
                                 <div className="flex flex-row justify-center">
                                     <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />
                                 </div>
@@ -651,39 +734,83 @@ const Visualizations: React.FC = () => {
                         </>
                     )}
                 </div>
-                <div className="flex flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 wrap:w-full wrap:flex-0">
-                    {formattedPlotData && Object.keys(formattedPlotData).length > 0 ? (
-                        visualization === 'Scatter Plot' ? (
-                            <DotPlot
-                                data={formattedPlotData}
-                                treatment={layer === 'Treatment Response'}
-                                entityLabel={entityLabel}
-                                valueLabel={valueLabel}
-                            />
-                        ) : visualization === 'Heatmap' ? (
-                            <Heatmap
-                                data={formattedPlotData}
-                                treatment={layer === 'Treatment Response'}
-                                entityLabel={entityLabel}
-                                valueLabel={valueLabel}
-                            />
+                <div className="flex flex-col flex-1 gap-6 wrap:w-full">
+                    <div className="flex flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 wrap:w-full wrap:flex-0">
+                        {layer === 'Imaging' ? (
+                            retrievingImaging ? (
+                                <div className="flex flex-col flex-1 justify-center items-center h-full min-h-[450px] gap-4">
+                                    <ProgressSpinner style={{ width: '45px', height: '45px' }} strokeWidth="3" />
+                                    <span className="text-bodyMd font-medium text-text-secondary">
+                                        Computing 2D morphological latent space and clustering tile embeddings...
+                                    </span>
+                                </div>
+                            ) : imagingData && imagingData.points.length > 0 ? (
+                                <div className="flex flex-col w-full">
+                                    {/* Simple Text Header matching DotPlot/ViolinPlot */}
+                                    <div className="mb-2 flex flex-row justify-center items-center gap-1">
+                                        <h1 className="text-headingMd font-semibold text-text-primary">Selected:</h1>
+                                        <h2 className="text-headingSm text-text-primary font-light text-wrap break-words">
+                                            H&E Latent Space ({imagingData.n_clusters} Clusters, {imagingData.total_tiles.toLocaleString()} Subsampled Tiles)
+                                        </h2>
+                                    </div>
+
+                                    <ImagingScatterPlot
+                                        data={imagingData.points}
+                                        clusters={imagingData.clusters}
+                                        selectedClusterId={selectedClusterId}
+                                        onSelectCluster={setSelectedClusterId}
+                                        colorBy={imagingColorBy}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex flex-1 justify-center items-center h-full min-h-[400px]">
+                                    <p className="text-gray-400 font-medium">
+                                        No imaging tile embeddings found for this dataset.
+                                    </p>
+                                </div>
+                            )
+                        ) : formattedPlotData && Object.keys(formattedPlotData).length > 0 ? (
+                            visualization === 'Scatter Plot' ? (
+                                <DotPlot
+                                    data={formattedPlotData}
+                                    treatment={layer === 'Treatment Response'}
+                                    entityLabel={entityLabel}
+                                    valueLabel={valueLabel}
+                                />
+                            ) : visualization === 'Heatmap' ? (
+                                <Heatmap
+                                    data={formattedPlotData}
+                                    treatment={layer === 'Treatment Response'}
+                                    entityLabel={entityLabel}
+                                    valueLabel={valueLabel}
+                                />
+                            ) : (
+                                <ViolinPlot
+                                    data={formattedPlotData}
+                                    layerName={layer.toString()}
+                                    treatment={layer === 'Treatment Response'}
+                                    entityLabel={entityLabel}
+                                    valueLabel={valueLabel}
+                                />
+                            )
                         ) : (
-                            <ViolinPlot
-                                data={formattedPlotData}
-                                layerName={layer.toString()}
-                                treatment={layer === 'Treatment Response'}
-                                entityLabel={entityLabel}
-                                valueLabel={valueLabel}
-                            />
-                        )
-                    ) : (
-                        <div className="flex flex-1 justify-center items-center h-full min-h-[400px]">
-                            <p className="text-gray-400 font-medium">
-                                Please select{' '}
-                                {layer === 'Treatment Response' ? 'drugs' : `${entityLabel.toLowerCase()}s`} to display
-                                visualization
-                            </p>
-                        </div>
+                            <div className="flex flex-1 justify-center items-center h-full min-h-[400px]">
+                                <p className="text-gray-400 font-medium">
+                                    Please select{' '}
+                                    {layer === 'Treatment Response' ? 'drugs' : `${entityLabel.toLowerCase()}s`} to display
+                                    visualization
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Cluster Tile Exemplars Detail Panel */}
+                    {layer === 'Imaging' && selectedClusterId !== null && imagingData && (
+                        <ClusterTileDetail
+                            cluster={imagingData.clusters.find(c => c.cluster_id === selectedClusterId) || null}
+                            color={GENE_COLORS[selectedClusterId % GENE_COLORS.length]}
+                            onClose={() => setSelectedClusterId(null)}
+                        />
                     )}
                 </div>
             </div>

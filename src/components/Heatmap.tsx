@@ -186,11 +186,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, treatment, entityLabel, valueLa
             .attr('opacity', 0)
             .style('cursor', 'pointer')
             .on('mouseenter', (_event, d) => {
-                tooltip
-                    .html(
-                        buildTooltipHtml(currentEntityLabel, d.gene, currentValueLabel, d)
-                    )
-                    .style('opacity', '1');
+                tooltip.html(buildTooltipHtml(currentEntityLabel, d.gene, currentValueLabel, d)).style('opacity', '1');
             })
             .on('mousemove', event => {
                 const [mx, my] = d3.pointer(event, svgRef.current!.parentElement!);
@@ -347,10 +343,21 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, treatment, entityLabel, valueLa
         return () => {
             tooltip.remove();
         };
-    }, [data, width, height, genes, numGenes, numCellLines, cellSize, availableW, currentEntityLabel, currentValueLabel]);
+    }, [
+        data,
+        width,
+        height,
+        genes,
+        numGenes,
+        numCellLines,
+        cellSize,
+        availableW,
+        currentEntityLabel,
+        currentValueLabel
+    ]);
 
     return (
-        <div ref={containerRef} style={{ position: 'relative', width: '100%', minHeight: height, overflow: 'hidden' }}>
+        <div ref={containerRef} style={{ position: 'relative', width: '100%', minHeight: height }}>
             <svg ref={svgRef} style={{ width: '100%', height: height }} />
         </div>
     );

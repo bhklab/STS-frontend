@@ -365,11 +365,7 @@ const SingleViolinChart: React.FC<SingleViolinChartProps> = ({
                 .style('cursor', 'pointer')
                 .on('mouseenter', (_event, d) => {
                     if (tooltip) {
-                        tooltip
-                            .html(
-                                buildTooltipHtml(entityLabel, geneName, yAxisTitle, d)
-                            )
-                            .style('opacity', '1');
+                        tooltip.html(buildTooltipHtml(entityLabel, geneName, yAxisTitle, d)).style('opacity', '1');
                     }
                 })
                 .on('mousemove', event => {
@@ -438,7 +434,7 @@ const SingleViolinChart: React.FC<SingleViolinChartProps> = ({
     }, [points, width, height, geneName, showLegend, yAxisTitle, entityLabel]);
 
     return (
-        <div style={{ position: 'relative', width: '100%', height: height || 'auto', overflow: 'hidden' }}>
+        <div style={{ position: 'relative', width: '100%', height: height || 'auto' }}>
             <svg ref={svgRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
         </div>
     );
@@ -648,11 +644,7 @@ const AllGenesViolinChart: React.FC<AllGenesViolinChartProps> = ({
                 .style('cursor', 'pointer')
                 .on('mouseenter', (_event, d) => {
                     if (tooltip) {
-                        tooltip
-                            .html(
-                                buildTooltipHtml(entityLabel, gene, yAxisTitle, d)
-                            )
-                            .style('opacity', '1');
+                        tooltip.html(buildTooltipHtml(entityLabel, gene, yAxisTitle, d)).style('opacity', '1');
                     }
                 })
                 .on('mousemove', event => {
@@ -755,7 +747,7 @@ const AllGenesViolinChart: React.FC<AllGenesViolinChartProps> = ({
     }, [data, geneNames, width, height, yAxisTitle, entityLabel]);
 
     return (
-        <div style={{ position: 'relative', width: '100%', height: height || 'auto', overflow: 'hidden' }}>
+        <div style={{ position: 'relative', width: '100%', height: height || 'auto' }}>
             <svg ref={svgRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
         </div>
     );
