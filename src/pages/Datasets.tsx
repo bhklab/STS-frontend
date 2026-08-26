@@ -158,8 +158,6 @@ const Datasets: React.FC = () => {
 
     return (
         <div className="flex flex-col bg-background gap-10 min-h-screen m-auto px-10 py-10 w-full">
-            <Tooltip target=".preclinical-icon" />
-            <Tooltip target=".clinical-icon" />
             {/* Overview Multi-level Pie / Doughnut Charts */}
             {loading ? (
                 <div className="w-full flex flex-col gap-6 justify-center items-center h-96">
@@ -168,6 +166,8 @@ const Datasets: React.FC = () => {
                 </div>
             ) : (
                 <div className="flex flex-col gap-10 w-full">
+                    <Tooltip target=".preclinical-icon" />
+                    <Tooltip target=".clinical-icon" />
                     <div className="flex flex-row gap-4 justify-start bg-white w-fit p-2 rounded-md shadow-card border border-border/75">
                         <div
                             className={`p-2 rounded-md cursor-pointer ${!clinical ? 'bg-subsection-1' : ''} hover:bg-subsection-1 preclinical-icon`}
