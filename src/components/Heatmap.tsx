@@ -1,13 +1,11 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import { useContainerSize } from '../hooks/useContainerSize';
 import * as d3 from 'd3';
-import { type PlotDataPoint, TISSUE_COLORS, DEFAULT_COLOR } from './DotPlot';
+import { type PlotDataPoint, TISSUE_COLORS, DEFAULT_COLOR } from './plotConstants';
+import { buildTooltipHtml } from './tooltipUtils';
 
-interface HeatmapInternalPoint {
-    cellLine: string;
+interface HeatmapInternalPoint extends PlotDataPoint {
     gene: string;
-    value: number;
-    tissue: string;
 }
 
 interface HeatmapProps {
@@ -50,7 +48,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, treatment, entityLabel, valueLa
         const flat: HeatmapInternalPoint[] = [];
         for (const [gene, points] of Object.entries(data)) {
             for (const p of points) {
-                flat.push({ cellLine: p.cellLine, gene, value: p.value, tissue: p.tissue });
+                flat.push({ ...p, gene });
             }
         }
 
@@ -190,7 +188,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, treatment, entityLabel, valueLa
             .on('mouseenter', (_event, d) => {
                 tooltip
                     .html(
-                        `<strong>${currentEntityLabel}: </strong>${d.gene}<br/><strong>Cell Line: </strong>${d.cellLine}<br/><strong>${currentValueLabel}: </strong>${d.value.toFixed(2)}<br/><strong>Tissue: </strong>${d.tissue}`
+                        buildTooltipHtml(currentEntityLabel, d.gene, currentValueLabel, d)
                     )
                     .style('opacity', '1');
             })

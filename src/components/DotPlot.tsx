@@ -1,12 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { useContainerSize } from '../hooks/useContainerSize';
 import * as d3 from 'd3';
+import { buildTooltipHtml } from './tooltipUtils';
 
-export interface PlotDataPoint {
-    cellLine: string;
-    value: number;
-    tissue: string;
-}
+import { type PlotDataPoint, TISSUE_COLORS, GENE_COLORS, DEFAULT_COLOR } from './plotConstants';
+
+export type { PlotDataPoint };
 
 interface DotPlotProps {
     data: Record<string, PlotDataPoint[]>;
@@ -15,42 +14,8 @@ interface DotPlotProps {
     valueLabel?: string;
 }
 
-export const TISSUE_COLORS: Record<string, string> = {
-    'Soft Tissue': '#6a9fc8', // muted steel-blue
-    Uterus: '#e8917a' // warm salmon
-};
-
-// 20 distinct, accessible, and curated colors for up to 20 genes
-export const GENE_COLORS = [
-    '#006494', // Baltic Blue
-    '#10b981', // Emerald
-    '#8b5cf6', // Purple
-    '#f59e0b', // Amber
-    '#ec4899', // Pink
-    '#06b6d4', // Cyan
-    '#f97316', // Orange
-    '#6366f1', // Indigo
-    '#84cc16', // Lime
-    '#14b8a6', // Teal
-    '#d946ef', // Fuchsia
-    '#e11d48', // Rose
-    '#3b82f6', // Bright Blue
-    '#a855f7', // Violet
-    '#eab308', // Yellow
-    '#22c55e', // Green
-    '#64748b', // Slate
-    '#ca8a04', // Dark Goldenrod
-    '#0284c7', // Sky Blue
-    '#9333ea' // Dark Purple
-];
-
-export const DEFAULT_COLOR = '#999999';
-
-interface FlatDataPoint {
+interface FlatDataPoint extends PlotDataPoint {
     gene: string;
-    cellLine: string;
-    value: number;
-    tissue: string;
 }
 
 const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLabel }) => {
@@ -69,7 +34,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
         const flat: FlatDataPoint[] = [];
         geneNames.forEach(gene => {
             (data[gene] || []).forEach(p => {
-                flat.push({ gene, cellLine: p.cellLine, value: p.value, tissue: p.tissue });
+                flat.push({ ...p, gene });
             });
         });
 
@@ -87,7 +52,8 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
         // Sort cell lines
         let cellLines: string[] = [];
         if (isSingleGene) {
-            cellLines = [...flat].sort((a, b) => a.value - b.value).map(d => d.cellLine);
+            const sorted = [...flat].sort((a, b) => a.value - b.value);
+            cellLines = Array.from(new Set(sorted.map(d => d.cellLine)));
         } else {
             const cellLineAvg = new Map<string, number>();
             const cellLineCount = new Map<string, number>();
@@ -103,9 +69,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
         }
 
         // Scales
-        const xScale = d3.scaleBand<string>().domain(cellLines).range([0, innerW]).padding(0.4);
-
-        const xSubScale = d3.scalePoint<string>().domain(geneNames).range([0, xScale.bandwidth()]).padding(0.5);
+        const xScale = d3.scaleBand<string>().domain(cellLines).range([0, innerW]).padding(0.3);
 
         const yExtent = d3.extent(flat, d => d.value) as [number, number];
         const yPadding = (yExtent[1] - yExtent[0]) * 0.1 || 1;
@@ -203,10 +167,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
 
         const getCx = (d: FlatDataPoint) => {
             const base = xScale(d.cellLine) ?? 0;
-            if (isSingleGene) {
-                return base + xScale.bandwidth() / 2;
-            }
-            return base + (xSubScale(d.gene) ?? xScale.bandwidth() / 2);
+            return base + xScale.bandwidth() / 2;
         };
 
         // Connecting lines per gene (drawn before dots so dots sit on top)
@@ -264,9 +225,7 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
             .style('cursor', 'pointer')
             .on('mouseenter', (_event, d) => {
                 tooltip
-                    .html(
-                        `<strong>${currentEntityLabel}: </strong>${d.gene}<br/><strong>Cell Line: </strong>${d.cellLine}<br/><strong>${currentValueLabel}: </strong>${d.value.toFixed(2)}<br/><strong>Tissue: </strong>${d.tissue}`
-                    )
+                    .html(buildTooltipHtml(currentEntityLabel, d.gene, currentValueLabel, d))
                     .style('opacity', '1');
             })
             .on('mousemove', event => {

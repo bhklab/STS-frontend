@@ -27,7 +27,8 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { useContainerSize } from '../hooks/useContainerSize';
 import * as d3 from 'd3';
-import { type PlotDataPoint, TISSUE_COLORS, DEFAULT_COLOR } from './DotPlot';
+import { type PlotDataPoint, TISSUE_COLORS, DEFAULT_COLOR } from './plotConstants';
+import { buildTooltipHtml } from './tooltipUtils';
 
 interface ViolinPlotProps {
     data: Record<string, PlotDataPoint[]>;
@@ -334,7 +335,7 @@ const SingleViolinChart: React.FC<SingleViolinChartProps> = ({
                 .append('circle')
                 .attr('cx', d => {
                     const density = interpolateDensity(d.value, kdeData.kde);
-                    const halfW = wScale(density) * 0.7;
+                    const halfW = wScale(density) * 0.5;
                     const jitter = pseudoRandom(d.cellLine) * halfW;
                     return xCenter + jitter;
                 })
@@ -354,7 +355,7 @@ const SingleViolinChart: React.FC<SingleViolinChartProps> = ({
                 .append('circle')
                 .attr('cx', d => {
                     const density = interpolateDensity(d.value, kdeData.kde);
-                    const halfW = wScale(density) * 0.7;
+                    const halfW = wScale(density) * 0.5;
                     const jitter = pseudoRandom(d.cellLine) * halfW;
                     return xCenter + jitter;
                 })
@@ -366,7 +367,7 @@ const SingleViolinChart: React.FC<SingleViolinChartProps> = ({
                     if (tooltip) {
                         tooltip
                             .html(
-                                `<strong>${entityLabel}: </strong>${geneName}<br/><strong>Cell Line: </strong>${d.cellLine}<br/><strong>${yAxisTitle}: </strong>${d.value.toFixed(2)}<br/><strong>Tissue: </strong>${d.tissue}`
+                                buildTooltipHtml(entityLabel, geneName, yAxisTitle, d)
                             )
                             .style('opacity', '1');
                     }
@@ -617,7 +618,7 @@ const AllGenesViolinChart: React.FC<AllGenesViolinChartProps> = ({
                 .append('circle')
                 .attr('cx', d => {
                     const density = interpolateDensity(d.value, kdeData.kde);
-                    const halfW = wScale(density) * 0.72;
+                    const halfW = wScale(density) * 0.5;
                     const jitter = pseudoRandom(d.cellLine) * halfW;
                     return xCenter + jitter;
                 })
@@ -637,7 +638,7 @@ const AllGenesViolinChart: React.FC<AllGenesViolinChartProps> = ({
                 .append('circle')
                 .attr('cx', d => {
                     const density = interpolateDensity(d.value, kdeData.kde);
-                    const halfW = wScale(density) * 0.72;
+                    const halfW = wScale(density) * 0.5;
                     const jitter = pseudoRandom(d.cellLine) * halfW;
                     return xCenter + jitter;
                 })
@@ -649,7 +650,7 @@ const AllGenesViolinChart: React.FC<AllGenesViolinChartProps> = ({
                     if (tooltip) {
                         tooltip
                             .html(
-                                `<strong>${entityLabel}: </strong>${gene}<br/><strong>Cell Line: </strong>${d.cellLine}<br/><strong>${yAxisTitle}: </strong>${d.value.toFixed(2)}<br/><strong>Tissue: </strong>${d.tissue}`
+                                buildTooltipHtml(entityLabel, gene, yAxisTitle, d)
                             )
                             .style('opacity', '1');
                     }

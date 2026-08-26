@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Hospital, Microscope } from 'lucide-react';
-import DotPlot, { type PlotDataPoint } from '../components/DotPlot';
+import DotPlot from '../components/DotPlot';
+import { type PlotDataPoint } from '../components/plotConstants';
 import Heatmap from '../components/Heatmap';
 import ViolinPlot from '../components/ViolinPlot';
 import { Tooltip } from 'primereact/tooltip';
@@ -29,6 +30,25 @@ interface Drug {
     treatment_id: string;
     cid: string;
 }
+
+interface AgeRange {
+    label: string;
+    min: number;
+    max: number;
+}
+
+const AGE_RANGES: AgeRange[] = [
+    { label: '0-14', min: 0, max: 14 },
+    { label: '15-24', min: 15, max: 24 },
+    { label: '25-34', min: 25, max: 34 },
+    { label: '35-44', min: 35, max: 44 },
+    { label: '45-54', min: 45, max: 54 },
+    { label: '55-64', min: 55, max: 64 },
+    { label: '65-74', min: 65, max: 74 },
+    { label: '75-84', min: 75, max: 84 },
+    { label: '85-94', min: 85, max: 94 },
+    { label: '95+', min: 95, max: Infinity }
+];
 
 const Visualizations: React.FC = () => {
     const [clinical, setClinical] = useState(false);
@@ -64,6 +84,14 @@ const Visualizations: React.FC = () => {
     // Plot Data state
     const [plotData, setPlotData] = useState<Record<string, PlotDataPoint[]>>({});
 
+    // Filter state
+    const [filterSex, setFilterSex] = useState<string[]>([]);
+    const [filterAge, setFilterAge] = useState<string[]>([]);
+    const [filterSecondLevel, setFilterSecondLevel] = useState<string[]>([]);
+    const [filterFdaApproval, setFilterFdaApproval] = useState<string | null>(null);
+    const [filterRace, setFilterRace] = useState<string[]>([]);
+    const [filterHistology, setFilterHistology] = useState<string[]>([]);
+
     const isTreatment = layer === 'Treatment Response'; // True, if 'Treatment Response' is selected
     const entityLabel = useMemo(() => {
         if (isTreatment) return 'Drug';
@@ -77,22 +105,65 @@ const Visualizations: React.FC = () => {
     // Format data for plots based on layer and responseType
     const formattedPlotData = useMemo<Record<string, PlotDataPoint[]>>(() => {
         if (!plotData || Object.keys(plotData).length === 0) return {};
-        if (!isTreatment) return plotData as Record<string, PlotDataPoint[]>;
 
-        const metric = responseType === 'IC50' ? 'ic50_recomputed' : 'aac_recomputed';
-        const transformed: Record<string, PlotDataPoint[]> = {};
-
-        for (const [drugName, items] of Object.entries(plotData)) {
-            transformed[drugName] = (items as any[])
-                .filter(p => p[metric] !== null && p[metric] !== undefined && !isNaN(Number(p[metric])))
-                .map(p => ({
-                    cellLine: p.cellLine,
-                    value: Number(p[metric]),
-                    tissue: p.tissue
-                }));
+        let data: Record<string, PlotDataPoint[]>;
+        if (!isTreatment) {
+            data = plotData as Record<string, PlotDataPoint[]>;
+        } else {
+            const metric = responseType === 'IC50' ? 'ic50_recomputed' : 'aac_recomputed';
+            const transformed: Record<string, PlotDataPoint[]> = {};
+            for (const [drugName, items] of Object.entries(plotData)) {
+                transformed[drugName] = (items as any[])
+                    .filter(p => p[metric] !== null && p[metric] !== undefined && !isNaN(Number(p[metric])))
+                    .map(p => ({
+                        ...p,
+                        cellLine: p.cellLine,
+                        value: Number(p[metric]),
+                        tissue: p.tissue
+                    }));
+            }
+            data = transformed;
         }
-        return transformed;
-    }, [plotData, isTreatment, responseType]);
+
+        // Apply filters
+        const filtered: Record<string, PlotDataPoint[]> = {};
+        for (const [key, points] of Object.entries(data)) {
+            const fp = points.filter(p => {
+                if (filterSex.length > 0 && !filterSex.includes(String(p.sex ?? ''))) return false;
+                if (filterAge.length > 0) {
+                    if (p.age == null || p.age === '' || isNaN(Number(p.age))) return false;
+                    const ageNum = Number(p.age);
+                    const matchesAge = filterAge.some(selectedRange => {
+                        const range = AGE_RANGES.find(r => r.label === selectedRange);
+                        return range && ageNum >= range.min && ageNum <= range.max;
+                    });
+                    if (!matchesAge) return false;
+                }
+                if (filterSecondLevel.length > 0 && !filterSecondLevel.includes(String(p.second_level ?? '')))
+                    return false;
+                if (filterRace.length > 0 && !filterRace.includes(String(p.race ?? ''))) return false;
+                if (filterHistology.length > 0 && !filterHistology.includes(String(p.histology ?? ''))) return false;
+                if (filterFdaApproval !== null) {
+                    const approved = p.fda_approval === true || p.fda_approval === 'True';
+                    if (filterFdaApproval === 'Yes' && !approved) return false;
+                    if (filterFdaApproval === 'No' && approved) return false;
+                }
+                return true;
+            });
+            if (fp.length > 0) filtered[key] = fp;
+        }
+        return filtered;
+    }, [
+        plotData,
+        isTreatment,
+        responseType,
+        filterSex,
+        filterAge,
+        filterSecondLevel,
+        filterFdaApproval,
+        filterRace,
+        filterHistology
+    ]);
 
     useEffect(() => {
         const getDatasets = async () => {
@@ -115,6 +186,15 @@ const Visualizations: React.FC = () => {
         }
     }, [dataset]);
 
+    const clearFilters = () => {
+        setFilterSex([]);
+        setFilterAge([]);
+        setFilterSecondLevel([]);
+        setFilterFdaApproval(null);
+        setFilterRace([]);
+        setFilterHistology([]);
+    };
+
     const selectDataset = async (dataset: Dataset) => {
         setDataset(dataset);
         setAvailableLayers([]);
@@ -123,6 +203,7 @@ const Visualizations: React.FC = () => {
         setSelectedGenes([]);
         setSelectedDrugs([]);
         setPlotData({});
+        clearFilters();
         getDataLayers(dataset.id);
     };
 
@@ -158,6 +239,7 @@ const Visualizations: React.FC = () => {
         setSelectedGenes([]);
         setSelectedDrugs([]);
         setPlotData({});
+        clearFilters();
     };
 
     const getAvailableGenes = async (dataset_id: number, layer: String) => {
@@ -192,6 +274,7 @@ const Visualizations: React.FC = () => {
         const normalized: Record<string, PlotDataPoint[]> = {};
         for (const [geneName, points] of Object.entries(res.data as Record<string, any[]>)) {
             normalized[geneName] = points.map(p => ({
+                ...p,
                 cellLine: p.cellLine ?? String(p.sample),
                 value: p.value ?? (p.mutation !== undefined ? (p.mutation ? 1 : 0) : 0),
                 tissue: p.tissue
@@ -353,6 +436,167 @@ const Visualizations: React.FC = () => {
                                 </div>
                             )}
                         </div>
+                    )}
+
+                    {/* Dynamic Filters */}
+                    {Object.keys(plotData).length > 0 && (
+                        <>
+                            <div className="border-t border-border/50 pt-3 mt-1">
+                                <span className="text-xs font-medium text-text-primary/60 uppercase tracking-wide">
+                                    Optional Filters
+                                </span>
+                            </div>
+
+                            {/* Sex filter — available for both pre-clinical & clinical */}
+                            {(() => {
+                                const options = [
+                                    ...new Set(
+                                        Object.values(plotData)
+                                            .flat()
+                                            .map(p => String(p.sex ?? ''))
+                                            .filter(Boolean)
+                                    )
+                                ].sort();
+                                return options.length > 0 ? (
+                                    <div className="flex">
+                                        <MultiSelect
+                                            value={filterSex}
+                                            onChange={e => setFilterSex(e.value)}
+                                            options={options}
+                                            display="chip"
+                                            placeholder="Filter by sex"
+                                            className="w-full wrap:w-14rem text-sm"
+                                        />
+                                    </div>
+                                ) : null;
+                            })()}
+
+                            {/* Age filter */}
+                            {(() => {
+                                const presentRanges = AGE_RANGES.filter(range =>
+                                    Object.values(plotData)
+                                        .flat()
+                                        .some(p => {
+                                            if (p.age == null || p.age === '' || isNaN(Number(p.age))) return false;
+                                            const ageNum = Number(p.age);
+                                            return ageNum >= range.min && ageNum <= range.max;
+                                        })
+                                ).map(r => r.label);
+
+                                return presentRanges.length > 0 ? (
+                                    <div className="flex">
+                                        <MultiSelect
+                                            value={filterAge}
+                                            onChange={e => setFilterAge(e.value)}
+                                            options={presentRanges}
+                                            display="chip"
+                                            placeholder="Filter by age"
+                                            className="w-full wrap:w-14rem text-sm"
+                                        />
+                                    </div>
+                                ) : null;
+                            })()}
+
+                            {/* Subtype (second_level) — pre-clinical only */}
+                            {!clinical &&
+                                (() => {
+                                    const options = [
+                                        ...new Set(
+                                            Object.values(plotData)
+                                                .flat()
+                                                .map(p => String(p.second_level ?? ''))
+                                                .filter(Boolean)
+                                        )
+                                    ].sort();
+                                    return options.length > 0 ? (
+                                        <div className="flex">
+                                            <MultiSelect
+                                                value={filterSecondLevel}
+                                                onChange={e => setFilterSecondLevel(e.value)}
+                                                options={options}
+                                                display="chip"
+                                                placeholder="Filter by subtype"
+                                                className="w-full wrap:w-14rem text-sm"
+                                            />
+                                        </div>
+                                    ) : null;
+                                })()}
+
+                            {/* Race — clinical only */}
+                            {clinical &&
+                                (() => {
+                                    const options = [
+                                        ...new Set(
+                                            Object.values(plotData)
+                                                .flat()
+                                                .map(p => String(p.race ?? ''))
+                                                .filter(Boolean)
+                                        )
+                                    ].sort();
+                                    return options.length > 0 ? (
+                                        <div className="flex">
+                                            <MultiSelect
+                                                value={filterRace}
+                                                onChange={e => setFilterRace(e.value)}
+                                                options={options}
+                                                display="chip"
+                                                placeholder="Filter by race"
+                                                className="w-full wrap:w-14rem text-sm"
+                                            />
+                                        </div>
+                                    ) : null;
+                                })()}
+
+                            {/* Histology — clinical only */}
+                            {clinical &&
+                                (() => {
+                                    const options = [
+                                        ...new Set(
+                                            Object.values(plotData)
+                                                .flat()
+                                                .map(p => String(p.histology ?? ''))
+                                                .filter(Boolean)
+                                        )
+                                    ].sort();
+                                    return options.length > 0 ? (
+                                        <div className="flex">
+                                            <MultiSelect
+                                                value={filterHistology}
+                                                onChange={e => setFilterHistology(e.value)}
+                                                options={options}
+                                                display="chip"
+                                                placeholder="Filter by histology"
+                                                className="w-full wrap:w-14rem text-sm"
+                                            />
+                                        </div>
+                                    ) : null;
+                                })()}
+
+                            {/* FDA Approval — treatment response only */}
+                            {isTreatment &&
+                                (() => {
+                                    const hasField = Object.values(plotData)
+                                        .flat()
+                                        .some(p => p.fda_approval != null);
+                                    return hasField ? (
+                                        <div className="flex">
+                                            <Dropdown
+                                                value={filterFdaApproval}
+                                                onChange={e => setFilterFdaApproval(e.value)}
+                                                options={[
+                                                    { label: 'Any Drug Status', value: null },
+                                                    { label: 'FDA Approved', value: 'Yes' },
+                                                    { label: 'Not FDA Approved', value: 'No' }
+                                                ]}
+                                                optionLabel="label"
+                                                optionValue="value"
+                                                placeholder="FDA approval"
+                                                className="w-full wrap:w-14rem text-sm"
+                                            />
+                                        </div>
+                                    ) : null;
+                                })()}
+                        </>
                     )}
                 </div>
                 <div className="flex flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 wrap:w-full wrap:flex-0">

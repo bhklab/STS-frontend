@@ -154,7 +154,7 @@ const Datasets: React.FC = () => {
     });
 
     return (
-        <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10 py-10 max-w-[2000px]">
+        <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10 py-10 w-full">
             {/* Overview Multi-level Pie / Doughnut Charts */}
             {loading ? (
                 <div className="w-full flex flex-col gap-6 justify-center items-center h-96">
@@ -321,7 +321,7 @@ const Datasets: React.FC = () => {
                             <Column
                                 field="description"
                                 header="Description"
-                                style={{ width: '20%' }}
+                                style={{ width: '28%' }}
                                 body={rowData => (
                                     <p
                                         className="line-clamp-4 text-bodySm text-text-secondary whitespace-pre-line"
@@ -332,12 +332,6 @@ const Datasets: React.FC = () => {
                             <Column field="total_samples" header="Total Samples" style={{ width: '8%' }} sortable />
                             <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
                             <Column field="total_drugs" header="Total Drugs" style={{ width: '8%' }} sortable />
-                            <Column
-                                field="total_cell_lines"
-                                header="Total Cell Lines"
-                                style={{ width: '8%' }}
-                                sortable
-                            />
                             <Column
                                 header="Data Layers"
                                 style={{ width: '20%' }}
