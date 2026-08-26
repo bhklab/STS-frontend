@@ -1,4 +1,5 @@
 import { BrowserRouter } from 'react-router';
+import { PrimeReactProvider } from 'primereact/api';
 import Navbar from './components/Navbar';
 import ProjectRoutes from './routes/Routes';
 import 'primereact/resources/themes/saga-blue/theme.css';
@@ -7,10 +8,12 @@ import 'primeicons/primeicons.css';
 
 function App() {
     return (
-        <BrowserRouter>
-            <Navbar />
-            <ProjectRoutes />
-        </BrowserRouter>
+        <PrimeReactProvider>
+            <BrowserRouter>
+                <Navbar />
+                <ProjectRoutes />
+            </BrowserRouter>
+        </PrimeReactProvider>
     );
 }
 
