@@ -4,6 +4,8 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Chart } from 'primereact/chart';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { Tooltip } from 'primereact/tooltip';
+import { Microscope, Hospital } from 'lucide-react';
 
 interface DatasetItem {
     id: number;
@@ -37,6 +39,7 @@ const DATASET_COLORS = [
 const Datasets: React.FC = () => {
     const [preclinicalDatasets, setPreclinicalDatasets] = useState<DatasetItem[]>([]);
     const [clinicalDatasets, setClinicalDatasets] = useState<DatasetItem[]>([]);
+    const [clinical, setClinical] = useState(false); // toggle between showing clinical or pre clinical statistics
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -154,7 +157,9 @@ const Datasets: React.FC = () => {
     });
 
     return (
-        <div className="flex flex-col bg-background gap-10 min-h-screen items-center justify-center m-auto px-10 py-10 w-full">
+        <div className="flex flex-col bg-background gap-10 min-h-screen m-auto px-10 py-10 w-full">
+            <Tooltip target=".preclinical-icon" />
+            <Tooltip target=".clinical-icon" />
             {/* Overview Multi-level Pie / Doughnut Charts */}
             {loading ? (
                 <div className="w-full flex flex-col gap-6 justify-center items-center h-96">
@@ -162,194 +167,233 @@ const Datasets: React.FC = () => {
                     <span className="text-bodyMd font-medium">Fetching dataset statistics ...</span>
                 </div>
             ) : (
-                <div>
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 w-full">
-                        <div className="flex flex-col gap-6 items-center bg-white p-6 rounded-md shadow-card border border-border/75">
-                            <h2 className="text-headingLg font-semibold text-text-primary">
-                                Preclinical Datasets Breakdown
-                            </h2>
-                            <div className="w-full flex justify-center items-center h-96">
-                                {preclinicalDatasets.length > 0 ? (
-                                    <Chart
-                                        type="doughnut"
-                                        data={pre_clinical_chart_data}
-                                        options={getChartOptions(preclinicalDatasets)}
-                                        className="w-full h-full max-w-md"
-                                    />
-                                ) : (
-                                    <div className="text-text-secondary text-bodySm">
-                                        No preclinical datasets available
-                                    </div>
-                                )}
-                            </div>
+                <div className="flex flex-col gap-10 w-full">
+                    <div className="flex flex-row gap-4 justify-start bg-white w-fit p-2 rounded-md shadow-card border border-border/75">
+                        <div
+                            className={`p-2 rounded-md cursor-pointer ${!clinical ? 'bg-subsection-1' : ''} hover:bg-subsection-1 preclinical-icon`}
+                            onClick={() => setClinical(false)}
+                            data-pr-tooltip="Pre-clinical data"
+                            data-pr-position="top"
+                            data-pr-at="center top-10"
+                        >
+                            <Microscope className={`${!clinical ? 'text-primary' : 'text-text-primary'}`} />
                         </div>
 
-                        <div className="flex flex-col gap-6 items-center bg-white p-6 rounded-md shadow-card border border-border/75">
-                            <h2 className="text-headingLg font-semibold text-text-primary">
-                                Clinical Datasets Breakdown
-                            </h2>
-                            <div className="w-full flex justify-center items-center h-96">
-                                {clinicalDatasets.length > 0 ? (
-                                    <Chart
-                                        type="doughnut"
-                                        data={clinical_chart_data}
-                                        options={getChartOptions(clinicalDatasets)}
-                                        className="w-full h-full max-w-md"
-                                    />
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center text-text-secondary text-bodySm py-12 gap-2">
-                                        <span className="text-bodyMd font-medium">No clinical datasets available</span>
-                                    </div>
-                                )}
-                            </div>
+                        <div
+                            className={`p-2 rounded-md cursor-pointer ${clinical ? 'bg-subsection-1' : ''} hover:bg-subsection-1 clinical-icon`}
+                            onClick={() => setClinical(true)}
+                            data-pr-tooltip="Clinical data"
+                            data-pr-position="top"
+                            data-pr-at="center top-10"
+                        >
+                            <Hospital className={`${clinical ? 'text-primary' : 'text-text-primary'}`} />
                         </div>
                     </div>
-
-                    <div className="flex flex-col gap-4 w-full">
-                        <h1 className="text-heading2Xl font-semibold text-text-primary text-left">
-                            Preclinical Datasets
-                        </h1>
-                        <DataTable
-                            value={preclinicalDatasets}
-                            loading={loading}
-                            sortMode="single"
-                            sortField="name"
-                            sortOrder={1}
-                            size="small"
-                            showGridlines={true}
-                            stripedRows
-                            className="shadow-card rounded-md overflow-hidden bg-white"
-                        >
-                            <Column
-                                field="name"
-                                header="Object Name"
-                                style={{ width: '5%' }}
-                                body={rowData =>
-                                    rowData.link ? (
-                                        <a
-                                            href={rowData.link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-headingSm text-primary font-bold hover:underline"
-                                        >
-                                            {rowData.name}
-                                        </a>
-                                    ) : (
-                                        <h3 className="text-headingSm text-primary font-bold">{rowData.name}</h3>
-                                    )
-                                }
-                                sortable
-                            />
-                            <Column field="version" header="Version" style={{ width: '5%' }} sortable />
-                            <Column field="PMID" header="PMID" style={{ width: '5%' }} sortable />
-                            <Column
-                                field="description"
-                                header="Description"
-                                style={{ width: '20%' }}
-                                body={rowData => (
-                                    <p
-                                        className="line-clamp-4 text-bodySm text-text-secondary whitespace-pre-line"
-                                        dangerouslySetInnerHTML={{ __html: rowData?.description || '' }}
+                    {!clinical ? (
+                        <div className="flex flex-col gap-10">
+                            <div className="flex flex-col gap-4 w-full">
+                                <h1 className="text-heading2Xl font-semibold text-text-primary text-left">
+                                    Pre Clinical Datasets
+                                </h1>
+                                <DataTable
+                                    value={preclinicalDatasets}
+                                    loading={loading}
+                                    sortMode="single"
+                                    sortField="name"
+                                    sortOrder={1}
+                                    size="small"
+                                    showGridlines={true}
+                                    stripedRows
+                                    className="shadow-card rounded-md overflow-hidden bg-white"
+                                >
+                                    <Column
+                                        field="name"
+                                        header="Object Name"
+                                        style={{ width: '5%' }}
+                                        body={rowData =>
+                                            rowData.link ? (
+                                                <a
+                                                    href={rowData.link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-headingSm text-primary font-bold hover:underline"
+                                                >
+                                                    {rowData.name}
+                                                </a>
+                                            ) : (
+                                                <h3 className="text-headingSm text-primary font-bold">
+                                                    {rowData.name}
+                                                </h3>
+                                            )
+                                        }
+                                        sortable
                                     />
-                                )}
-                            />
-                            <Column field="total_samples" header="Total Samples" style={{ width: '8%' }} sortable />
-                            <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
-                            <Column field="total_drugs" header="Total Drugs" style={{ width: '8%' }} sortable />
-                            <Column
-                                field="total_cell_lines"
-                                header="Total Cell Lines"
-                                style={{ width: '8%' }}
-                                sortable
-                            />
-                            <Column
-                                header="Data Layers"
-                                style={{ width: '20%' }}
-                                body={rowData => (
-                                    <div className="flex gap-1.5 flex-wrap">
-                                        {(rowData?.data_layers || []).map((layer: string, ind: number) => (
-                                            <span
-                                                key={ind}
-                                                className="rounded-md bg-primary px-2.5 py-1 text-caption text-white font-medium shadow-xs"
-                                            >
-                                                {layer}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-                            />
-                        </DataTable>
-                    </div>
-
-                    <div className="flex flex-col gap-4 w-full">
-                        <h1 className="text-heading2Xl font-semibold text-text-primary text-left">
-                            Preclinical Datasets
-                        </h1>
-                        <DataTable
-                            value={clinicalDatasets}
-                            loading={loading}
-                            sortMode="single"
-                            sortField="name"
-                            sortOrder={1}
-                            size="small"
-                            showGridlines={true}
-                            stripedRows
-                            className="shadow-card rounded-md overflow-hidden bg-white"
-                        >
-                            <Column
-                                field="name"
-                                header="Object Name"
-                                style={{ width: '5%' }}
-                                body={rowData =>
-                                    rowData.link ? (
-                                        <a
-                                            href={rowData.link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-headingSm text-primary font-bold hover:underline"
-                                        >
-                                            {rowData.name}
-                                        </a>
-                                    ) : (
-                                        <h3 className="text-headingSm text-primary font-bold">{rowData.name}</h3>
-                                    )
-                                }
-                                sortable
-                            />
-                            <Column field="version" header="Version" style={{ width: '5%' }} sortable />
-                            <Column field="PMID" header="PMID" style={{ width: '5%' }} sortable />
-                            <Column
-                                field="description"
-                                header="Description"
-                                style={{ width: '28%' }}
-                                body={rowData => (
-                                    <p
-                                        className="line-clamp-4 text-bodySm text-text-secondary whitespace-pre-line"
-                                        dangerouslySetInnerHTML={{ __html: rowData?.description || '' }}
+                                    <Column field="version" header="Version" style={{ width: '5%' }} sortable />
+                                    <Column field="PMID" header="PMID" style={{ width: '5%' }} sortable />
+                                    <Column
+                                        field="description"
+                                        header="Description"
+                                        style={{ width: '20%' }}
+                                        body={rowData => (
+                                            <p
+                                                className="line-clamp-4 text-bodySm text-text-secondary whitespace-pre-line"
+                                                dangerouslySetInnerHTML={{ __html: rowData?.description || '' }}
+                                            />
+                                        )}
                                     />
-                                )}
-                            />
-                            <Column field="total_samples" header="Total Samples" style={{ width: '8%' }} sortable />
-                            <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
-                            <Column field="total_drugs" header="Total Drugs" style={{ width: '8%' }} sortable />
-                            <Column
-                                header="Data Layers"
-                                style={{ width: '20%' }}
-                                body={rowData => (
-                                    <div className="flex gap-1.5 flex-wrap">
-                                        {(rowData?.data_layers || []).map((layer: string, ind: number) => (
-                                            <span
-                                                key={ind}
-                                                className="rounded-md bg-primary px-2.5 py-1 text-caption text-white font-medium shadow-xs"
-                                            >
-                                                {layer}
+                                    <Column
+                                        field="total_samples"
+                                        header="Total Samples"
+                                        style={{ width: '8%' }}
+                                        sortable
+                                    />
+                                    <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
+                                    <Column field="total_drugs" header="Total Drugs" style={{ width: '8%' }} sortable />
+                                    <Column
+                                        field="total_cell_lines"
+                                        header="Total Cell Lines"
+                                        style={{ width: '8%' }}
+                                        sortable
+                                    />
+                                    <Column
+                                        header="Data Layers"
+                                        style={{ width: '20%' }}
+                                        body={rowData => (
+                                            <div className="flex gap-1.5 flex-wrap">
+                                                {(rowData?.data_layers || []).map((layer: string, ind: number) => (
+                                                    <span
+                                                        key={ind}
+                                                        className="rounded-md bg-primary px-2.5 py-1 text-caption text-white font-medium shadow-xs"
+                                                    >
+                                                        {layer}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    />
+                                </DataTable>
+                            </div>
+                            <div className="flex flex-col gap-6 items-start bg-white p-6 rounded-md shadow-card border border-border/75 w-fit">
+                                <h2 className="text-headingLg font-semibold text-text-primary">
+                                    Pre Clinical Datasets Statistics
+                                </h2>
+                                <div className="flex justify-center items-center">
+                                    {preclinicalDatasets.length > 0 ? (
+                                        <Chart
+                                            type="doughnut"
+                                            data={pre_clinical_chart_data}
+                                            options={getChartOptions(preclinicalDatasets)}
+                                            className="w-120 h-120 sm:w-75 sm:h-75"
+                                        />
+                                    ) : (
+                                        <div className="text-text-secondary text-bodySm">
+                                            No pre clinical datasets available
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-10">
+                            <div className="flex flex-col gap-4 w-full">
+                                <h1 className="text-heading2Xl font-semibold text-text-primary text-left">
+                                    Clinical Datasets
+                                </h1>
+                                <DataTable
+                                    value={clinicalDatasets}
+                                    loading={loading}
+                                    sortMode="single"
+                                    sortField="name"
+                                    sortOrder={1}
+                                    size="small"
+                                    showGridlines={true}
+                                    stripedRows
+                                    className="shadow-card rounded-md overflow-hidden bg-white"
+                                >
+                                    <Column
+                                        field="name"
+                                        header="Object Name"
+                                        style={{ width: '5%' }}
+                                        body={rowData =>
+                                            rowData.link ? (
+                                                <a
+                                                    href={rowData.link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-headingSm text-primary font-bold hover:underline"
+                                                >
+                                                    {rowData.name}
+                                                </a>
+                                            ) : (
+                                                <h3 className="text-headingSm text-primary font-bold">
+                                                    {rowData.name}
+                                                </h3>
+                                            )
+                                        }
+                                        sortable
+                                    />
+                                    <Column field="version" header="Version" style={{ width: '5%' }} sortable />
+                                    <Column field="PMID" header="PMID" style={{ width: '5%' }} sortable />
+                                    <Column
+                                        field="description"
+                                        header="Description"
+                                        style={{ width: '28%' }}
+                                        body={rowData => (
+                                            <p
+                                                className="line-clamp-4 text-bodySm text-text-secondary whitespace-pre-line"
+                                                dangerouslySetInnerHTML={{ __html: rowData?.description || '' }}
+                                            />
+                                        )}
+                                    />
+                                    <Column
+                                        field="total_samples"
+                                        header="Total Samples"
+                                        style={{ width: '8%' }}
+                                        sortable
+                                    />
+                                    <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
+                                    <Column field="total_drugs" header="Total Drugs" style={{ width: '8%' }} sortable />
+                                    <Column
+                                        header="Data Layers"
+                                        style={{ width: '20%' }}
+                                        body={rowData => (
+                                            <div className="flex gap-1.5 flex-wrap">
+                                                {(rowData?.data_layers || []).map((layer: string, ind: number) => (
+                                                    <span
+                                                        key={ind}
+                                                        className="rounded-md bg-primary px-2.5 py-1 text-caption text-white font-medium shadow-xs"
+                                                    >
+                                                        {layer}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    />
+                                </DataTable>
+                            </div>
+                            <div className="flex flex-col gap-6 items-start bg-white p-6 rounded-md shadow-card border border-border/75 w-fit">
+                                <h2 className="text-headingLg font-semibold text-text-primary">
+                                    Clinical Datasets Statistics
+                                </h2>
+                                <div className="flex justify-center items-center">
+                                    {clinicalDatasets.length > 0 ? (
+                                        <Chart
+                                            type="doughnut"
+                                            data={clinical_chart_data}
+                                            options={getChartOptions(clinicalDatasets)}
+                                            className="w-120 h-120 sm:w-75 sm:h-75"
+                                        />
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center text-text-secondary text-bodySm py-12 gap-2">
+                                            <span className="text-bodyMd font-medium">
+                                                No clinical datasets available
                                             </span>
-                                        ))}
-                                    </div>
-                                )}
-                            />
-                        </DataTable>
-                    </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
