@@ -21,6 +21,10 @@ interface DatasetItem {
     total_genes: number;
     total_drugs: number;
     total_cell_lines: number;
+    total_slides?: number;
+    total_tiles?: number;
+    histology_counts?: Record<string, number>;
+    sex_counts?: Record<string, number>;
     data_layers: string[];
 }
 
@@ -36,6 +40,26 @@ const DATASET_COLORS = [
     '#14b8a6', // teal
     '#f97316' // orange
 ];
+
+const HISTOLOGY_COLORS: Record<string, string> = {
+    DDLPS: '#3b82f6',
+    LMS: '#10b981',
+    UPS: '#f59e0b',
+    MFS: '#ec4899',
+    SS: '#8b5cf6',
+    Synovial: '#8b5cf6',
+    MFH: '#6366f1',
+    MPNST: '#06b6d4',
+    'desmoid tumor': '#14b8a6',
+    Other: '#64748b',
+    Unknown: '#94a3b8'
+};
+
+const SEX_COLORS: Record<string, string> = {
+    Female: '#ec4899',
+    Male: '#3b82f6',
+    Unknown: '#94a3b8'
+};
 
 interface LayerMetricConfig {
     key: string;
@@ -65,9 +89,14 @@ const METRIC_CONFIGS: LayerMetricConfig[] = [
         getValue: d => d.total_genes || 0
     },
     {
-        key: 'data_layers',
-        title: 'Data Layers',
-        getValue: d => (d.data_layers || []).length
+        key: 'slides',
+        title: 'Pathology Slides',
+        getValue: d => d.total_slides || 0
+    },
+    {
+        key: 'tiles',
+        title: 'Pathology Tiles',
+        getValue: d => d.total_tiles || 0
     }
 ];
 
@@ -90,6 +119,12 @@ const getDonutChartOptions = (metric: LayerMetricConfig, datasetList: DatasetIte
                         const ds = datasetList.find(d => d.name === datasetName);
                         const layers = ds?.data_layers?.join(', ') || 'None';
                         return ` ${value} Layers (${layers})`;
+                    }
+                    if (metric.key === 'tiles') {
+                        return ` ${value.toLocaleString()} Subsampled Tiles`;
+                    }
+                    if (metric.key === 'slides') {
+                        return ` ${value.toLocaleString()} Whole Slide Images`;
                     }
                     return ` ${value.toLocaleString()}`;
                 }
@@ -146,6 +181,154 @@ const getAvailableMetricCharts = (datasets: DatasetItem[]) => {
     }).filter((item): item is NonNullable<typeof item> => item !== null);
 };
 
+const getClinicalDistributionCharts = (datasets: DatasetItem[]) => {
+    if (!datasets || datasets.length === 0) return [];
+
+    const charts: Array<{
+        key: string;
+        title: string;
+        total: number;
+        chartData: any;
+        options: any;
+    }> = [];
+
+    // 1. Histology Donut
+    const aggHist: Record<string, number> = {};
+    datasets.forEach(d => {
+        if (d.histology_counts) {
+            Object.entries(d.histology_counts).forEach(([h, count]) => {
+                aggHist[h] = (aggHist[h] || 0) + count;
+            });
+        }
+    });
+
+    const histEntries = Object.entries(aggHist).sort((a, b) => b[1] - a[1]);
+    const histTotal = histEntries.reduce((acc, [, val]) => acc + val, 0);
+
+    if (histTotal > 0) {
+        const labels = histEntries.map(([h]) => h);
+        const data = histEntries.map(([, val]) => val);
+        const backgroundColor = labels.map((h, i) => HISTOLOGY_COLORS[h] || DATASET_COLORS[i % DATASET_COLORS.length]);
+
+        charts.push({
+            key: 'histology',
+            title: 'Histology',
+            total: histTotal,
+            chartData: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Histology',
+                        data,
+                        backgroundColor,
+                        hoverOffset: 6
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                cutout: '60%',
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: (context: any) => {
+                                const item = context[0];
+                                return `${item.chart.data.labels[item.dataIndex]} — Histology`;
+                            },
+                            label: (context: any) => {
+                                const value = context.parsed;
+                                const pct = ((value / histTotal) * 100).toFixed(1);
+                                return ` ${value.toLocaleString()} Samples (${pct}%)`;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'bottom' as const,
+                        labels: {
+                            usePointStyle: true,
+                            padding: 8,
+                            font: {
+                                size: 10,
+                                family: "'Roboto', 'Inter', system-ui, sans-serif"
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Sex Donut
+    const aggSex: Record<string, number> = {};
+    datasets.forEach(d => {
+        if (d.sex_counts) {
+            Object.entries(d.sex_counts).forEach(([s, count]) => {
+                aggSex[s] = (aggSex[s] || 0) + count;
+            });
+        }
+    });
+
+    const sexEntries = Object.entries(aggSex).sort((a, b) => b[1] - a[1]);
+    const sexTotal = sexEntries.reduce((acc, [, val]) => acc + val, 0);
+
+    if (sexTotal > 0) {
+        const labels = sexEntries.map(([s]) => s);
+        const data = sexEntries.map(([, val]) => val);
+        const backgroundColor = labels.map(s => SEX_COLORS[s] || '#94a3b8');
+
+        charts.push({
+            key: 'sex',
+            title: 'Sex',
+            total: sexTotal,
+            chartData: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Sex',
+                        data,
+                        backgroundColor,
+                        hoverOffset: 6
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                cutout: '60%',
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: (context: any) => {
+                                const item = context[0];
+                                return `${item.chart.data.labels[item.dataIndex]} — Sex`;
+                            },
+                            label: (context: any) => {
+                                const value = context.parsed;
+                                const pct = ((value / sexTotal) * 100).toFixed(1);
+                                return ` ${value.toLocaleString()} Samples (${pct}%)`;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'bottom' as const,
+                        labels: {
+                            usePointStyle: true,
+                            padding: 12,
+                            font: {
+                                size: 11,
+                                family: "'Roboto', 'Inter', system-ui, sans-serif"
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    return charts;
+};
+
 const Datasets: React.FC = () => {
     const [preclinicalDatasets, setPreclinicalDatasets] = useState<DatasetItem[]>([]);
     const [clinicalDatasets, setClinicalDatasets] = useState<DatasetItem[]>([]);
@@ -171,7 +354,11 @@ const Datasets: React.FC = () => {
 
     const preclinicalMetricCharts = useMemo(() => getAvailableMetricCharts(preclinicalDatasets), [preclinicalDatasets]);
 
-    const clinicalMetricCharts = useMemo(() => getAvailableMetricCharts(clinicalDatasets), [clinicalDatasets]);
+    const clinicalMetricCharts = useMemo(() => {
+        const datasetCharts = getAvailableMetricCharts(clinicalDatasets);
+        const distributionCharts = getClinicalDistributionCharts(clinicalDatasets);
+        return [...datasetCharts, ...distributionCharts];
+    }, [clinicalDatasets]);
 
     return (
         <div className="flex flex-col bg-background gap-10 min-h-screen m-auto px-10 py-10 w-full">
@@ -282,14 +469,11 @@ const Datasets: React.FC = () => {
                                     {preclinicalMetricCharts.map(item => (
                                         <div
                                             key={item.key}
-                                            className="flex flex-col items-center p-4 bg-white rounded-lg border border-border/60 hover:shadow-sm transition-shadow"
+                                            className="flex flex-col items-center p-4 bg-white rounded-lg border border-border/60 hover:shadow-md transition-shadow"
                                         >
                                             <div className="flex flex-col items-center gap-1 mb-2">
                                                 <span className="text-headingMd font-semibold text-text-primary">
                                                     {item.title}
-                                                </span>
-                                                <span className="text-bodyXs text-text-secondary font-medium">
-                                                    Total: {item.total.toLocaleString()}
                                                 </span>
                                             </div>
                                             <div className="w-full h-56 flex items-center justify-center">
@@ -368,13 +552,6 @@ const Datasets: React.FC = () => {
                                         sortable
                                     />
                                     <Column
-                                        field="total_samples"
-                                        header="Total Samples"
-                                        style={{ width: '8%' }}
-                                        sortable
-                                    />
-                                    <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
-                                    <Column
                                         header="Data Layers"
                                         style={{ width: '20%' }}
                                         body={rowData => (
@@ -397,14 +574,11 @@ const Datasets: React.FC = () => {
                                     {clinicalMetricCharts.map(item => (
                                         <div
                                             key={item.key}
-                                            className="flex flex-col items-center p-4 bg-white rounded-lg border border-border/60 hover:shadow-sm transition-shadow"
+                                            className="flex flex-col items-center p-4 bg-white rounded-lg border border-border/60 hover:shadow-md transition-shadow"
                                         >
                                             <div className="flex flex-col items-center gap-1 mb-2">
                                                 <span className="text-headingMd font-semibold text-text-primary">
                                                     {item.title}
-                                                </span>
-                                                <span className="text-bodyXs text-text-secondary font-medium">
-                                                    Total: {item.total.toLocaleString()}
                                                 </span>
                                             </div>
                                             <div className="w-full h-56 flex items-center justify-center">
@@ -419,9 +593,7 @@ const Datasets: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-text-secondary text-bodySm">
-                                    No pre clinical datasets available
-                                </div>
+                                <div className="text-text-secondary text-bodySm">No clinical datasets available</div>
                             )}
                         </div>
                     )}
