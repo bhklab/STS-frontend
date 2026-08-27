@@ -11,6 +11,7 @@ interface DatasetItem {
     id: number;
     name: string;
     description?: string;
+    software?: string;
     version?: string;
     link?: string;
     publication?: string;
@@ -36,6 +37,115 @@ const DATASET_COLORS = [
     '#f97316' // orange
 ];
 
+interface LayerMetricConfig {
+    key: string;
+    title: string;
+    getValue: (d: DatasetItem) => number;
+}
+
+const METRIC_CONFIGS: LayerMetricConfig[] = [
+    {
+        key: 'samples',
+        title: 'Samples',
+        getValue: d => d.total_samples || 0
+    },
+    {
+        key: 'cell_lines',
+        title: 'Cell Lines',
+        getValue: d => d.total_cell_lines || 0
+    },
+    {
+        key: 'drugs',
+        title: 'Drugs',
+        getValue: d => d.total_drugs || 0
+    },
+    {
+        key: 'genes',
+        title: 'Genes',
+        getValue: d => d.total_genes || 0
+    },
+    {
+        key: 'data_layers',
+        title: 'Data Layers',
+        getValue: d => (d.data_layers || []).length
+    }
+];
+
+const getDonutChartOptions = (metric: LayerMetricConfig, datasetList: DatasetItem[]) => ({
+    maintainAspectRatio: false,
+    responsive: true,
+    cutout: '60%',
+    plugins: {
+        tooltip: {
+            callbacks: {
+                title: function (context: any) {
+                    const item = context[0];
+                    const datasetName = item.chart.data.labels[item.dataIndex];
+                    return `${datasetName} — ${metric.title}`;
+                },
+                label: function (context: any) {
+                    const value = context.parsed;
+                    const datasetName = context.chart.data.labels[context.dataIndex];
+                    if (metric.key === 'data_layers') {
+                        const ds = datasetList.find(d => d.name === datasetName);
+                        const layers = ds?.data_layers?.join(', ') || 'None';
+                        return ` ${value} Layers (${layers})`;
+                    }
+                    return ` ${value.toLocaleString()}`;
+                }
+            }
+        },
+        legend: {
+            position: 'bottom' as const,
+            labels: {
+                usePointStyle: true,
+                padding: 12,
+                font: {
+                    size: 11,
+                    family: "'Roboto', 'Inter', system-ui, sans-serif"
+                }
+            }
+        }
+    }
+});
+
+const getAvailableMetricCharts = (datasets: DatasetItem[]) => {
+    if (!datasets || datasets.length === 0) return [];
+
+    const labels = datasets.map(d => d.name);
+    const colors = DATASET_COLORS.slice(0, datasets.length);
+
+    return METRIC_CONFIGS.map(metric => {
+        const data = datasets.map(d => metric.getValue(d));
+        const total = data.reduce((acc, val) => acc + val, 0);
+
+        // If no data exists for a layer across all datasets, do not show that donut
+        if (total === 0) {
+            return null;
+        }
+
+        const chartData = {
+            labels,
+            datasets: [
+                {
+                    label: metric.title,
+                    data,
+                    backgroundColor: colors,
+                    hoverOffset: 6
+                }
+            ]
+        };
+
+        return {
+            key: metric.key,
+            title: metric.title,
+            total,
+            chartData,
+            options: getDonutChartOptions(metric, datasets)
+        };
+    }).filter((item): item is NonNullable<typeof item> => item !== null);
+};
+
 const Datasets: React.FC = () => {
     const [preclinicalDatasets, setPreclinicalDatasets] = useState<DatasetItem[]>([]);
     const [clinicalDatasets, setClinicalDatasets] = useState<DatasetItem[]>([]);
@@ -47,6 +157,7 @@ const Datasets: React.FC = () => {
             setLoading(true);
             try {
                 const res = await apiClient.get('/api/datasets/statistics/dataset-page');
+                console.log(res.data);
                 setClinicalDatasets(res.data.clinical_datasets || []);
                 setPreclinicalDatasets(res.data.preclinical_datasets || []);
             } catch (error) {
@@ -58,107 +169,13 @@ const Datasets: React.FC = () => {
         getDatasetStatistics();
     }, []);
 
-    // Helper to generate multi-ring doughnut datasets across all 5 metrics
-    const createMultiLevelChartData = (datasets: DatasetItem[]) => {
-        if (!datasets || datasets.length === 0) {
-            return { labels: [], datasets: [] };
-        }
+    const preclinicalMetricCharts = useMemo(() => getAvailableMetricCharts(preclinicalDatasets), [preclinicalDatasets]);
 
-        const labels = datasets.map(d => d.name);
-
-        return {
-            labels,
-            datasets: [
-                // Ring 1 (Outermost): Samples
-                {
-                    label: 'Samples',
-                    data: datasets.map(d => d.total_samples || 0),
-                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
-                    hoverOffset: 6
-                },
-                // Ring 2: Cell Lines
-                {
-                    label: 'Cell Lines',
-                    data: datasets.map(d => d.total_cell_lines || 0),
-                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
-                    hoverOffset: 6
-                },
-                // Ring 3: Drugs
-                {
-                    label: 'Drugs',
-                    data: datasets.map(d => d.total_drugs || 0),
-                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
-                    hoverOffset: 6
-                },
-                // Ring 4: Genes
-                {
-                    label: 'Genes',
-                    data: datasets.map(d => d.total_genes || 0),
-                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
-                    hoverOffset: 6
-                },
-                // Ring 5 (Innermost): Data Layers Count
-                {
-                    label: 'Data Layers',
-                    data: datasets.map(d => (d.data_layers || []).length),
-                    backgroundColor: DATASET_COLORS.slice(0, datasets.length),
-                    hoverOffset: 6
-                }
-            ]
-        };
-    };
-
-    const pre_clinical_chart_data = useMemo(
-        () => createMultiLevelChartData(preclinicalDatasets),
-        [preclinicalDatasets]
-    );
-
-    const clinical_chart_data = useMemo(() => createMultiLevelChartData(clinicalDatasets), [clinicalDatasets]);
-
-    const getChartOptions = (datasetList: DatasetItem[]) => ({
-        maintainAspectRatio: false,
-        responsive: true,
-        cutout: '22%',
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    title: function (context: any) {
-                        const item = context[0];
-                        const datasetName = item.chart.data.labels[item.dataIndex];
-                        const ringLabel = item.dataset.label;
-                        return `${datasetName} — ${ringLabel}`;
-                    },
-                    label: function (context: any) {
-                        const ringLabel = context.dataset.label;
-                        const value = context.parsed;
-                        const datasetName = context.chart.data.labels[context.dataIndex];
-
-                        if (ringLabel === 'Data Layers') {
-                            const ds = datasetList.find(d => d.name === datasetName);
-                            const layers = ds?.data_layers?.join(', ') || 'None';
-                            return ` ${value} Layers (${layers})`;
-                        }
-                        return ` ${value.toLocaleString()}`;
-                    }
-                }
-            },
-            legend: {
-                position: 'bottom' as const,
-                labels: {
-                    usePointStyle: true,
-                    padding: 16,
-                    font: {
-                        size: 12,
-                        family: "'Roboto', 'Inter', system-ui, sans-serif"
-                    }
-                }
-            }
-        }
-    });
+    const clinicalMetricCharts = useMemo(() => getAvailableMetricCharts(clinicalDatasets), [clinicalDatasets]);
 
     return (
         <div className="flex flex-col bg-background gap-10 min-h-screen m-auto px-10 py-10 w-full">
-            {/* Overview Multi-level Pie / Doughnut Charts */}
+            {/* Overview Pie / Doughnut Charts */}
             {loading ? (
                 <div className="w-full flex flex-col gap-6 justify-center items-center h-96">
                     <ProgressSpinner style={{ width: '150px', height: '150px' }} strokeWidth="4" />
@@ -229,31 +246,18 @@ const Datasets: React.FC = () => {
                                         sortable
                                     />
                                     <Column field="version" header="Version" style={{ width: '5%' }} sortable />
+                                    <Column field="software" header="Software" style={{ width: '5%' }} sortable />
                                     <Column field="PMID" header="PMID" style={{ width: '5%' }} sortable />
                                     <Column
                                         field="description"
                                         header="Description"
-                                        style={{ width: '20%' }}
+                                        style={{ width: '30%' }}
                                         body={rowData => (
                                             <p
                                                 className="line-clamp-4 text-bodySm text-text-secondary whitespace-pre-line"
                                                 dangerouslySetInnerHTML={{ __html: rowData?.description || '' }}
                                             />
                                         )}
-                                    />
-                                    <Column
-                                        field="total_samples"
-                                        header="Total Samples"
-                                        style={{ width: '8%' }}
-                                        sortable
-                                    />
-                                    <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
-                                    <Column field="total_drugs" header="Total Drugs" style={{ width: '8%' }} sortable />
-                                    <Column
-                                        field="total_cell_lines"
-                                        header="Total Cell Lines"
-                                        style={{ width: '8%' }}
-                                        sortable
                                     />
                                     <Column
                                         header="Data Layers"
@@ -273,25 +277,37 @@ const Datasets: React.FC = () => {
                                     />
                                 </DataTable>
                             </div>
-                            <div className="flex flex-col gap-6 items-start bg-white p-6 rounded-md shadow-card border border-border/75 w-fit">
-                                <h2 className="text-headingLg font-semibold text-text-primary">
-                                    Pre Clinical Datasets Statistics
-                                </h2>
-                                <div className="flex justify-center items-center">
-                                    {preclinicalDatasets.length > 0 ? (
-                                        <Chart
-                                            type="doughnut"
-                                            data={pre_clinical_chart_data}
-                                            options={getChartOptions(preclinicalDatasets)}
-                                            className="w-120 h-120 sm:w-75 sm:h-75"
-                                        />
-                                    ) : (
-                                        <div className="text-text-secondary text-bodySm">
-                                            No pre clinical datasets available
+                            {preclinicalMetricCharts.length > 0 ? (
+                                <div className="flex flex-row flex-wrap gap-6 items-stretch justify-start w-full">
+                                    {preclinicalMetricCharts.map(item => (
+                                        <div
+                                            key={item.key}
+                                            className="flex flex-col items-center p-4 bg-white rounded-lg border border-border/60 hover:shadow-sm transition-shadow"
+                                        >
+                                            <div className="flex flex-col items-center gap-1 mb-2">
+                                                <span className="text-headingMd font-semibold text-text-primary">
+                                                    {item.title}
+                                                </span>
+                                                <span className="text-bodyXs text-text-secondary font-medium">
+                                                    Total: {item.total.toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="w-full h-56 flex items-center justify-center">
+                                                <Chart
+                                                    type="doughnut"
+                                                    data={item.chartData}
+                                                    options={item.options}
+                                                    className="w-full h-full"
+                                                />
+                                            </div>
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="text-text-secondary text-bodySm">
+                                    No pre clinical datasets available
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="flex flex-col gap-10">
@@ -337,7 +353,7 @@ const Datasets: React.FC = () => {
                                     <Column
                                         field="description"
                                         header="Description"
-                                        style={{ width: '28%' }}
+                                        style={{ width: '25%' }}
                                         body={rowData => (
                                             <p
                                                 className="line-clamp-4 text-bodySm text-text-secondary whitespace-pre-line"
@@ -346,13 +362,18 @@ const Datasets: React.FC = () => {
                                         )}
                                     />
                                     <Column
+                                        field="key_study_findings"
+                                        header="Key Study Findings"
+                                        style={{ width: '25%' }}
+                                        sortable
+                                    />
+                                    <Column
                                         field="total_samples"
                                         header="Total Samples"
                                         style={{ width: '8%' }}
                                         sortable
                                     />
                                     <Column field="total_genes" header="Total Genes" style={{ width: '8%' }} sortable />
-                                    <Column field="total_drugs" header="Total Drugs" style={{ width: '8%' }} sortable />
                                     <Column
                                         header="Data Layers"
                                         style={{ width: '20%' }}
@@ -371,27 +392,37 @@ const Datasets: React.FC = () => {
                                     />
                                 </DataTable>
                             </div>
-                            <div className="flex flex-col gap-6 items-start bg-white p-6 rounded-md shadow-card border border-border/75 w-fit">
-                                <h2 className="text-headingLg font-semibold text-text-primary">
-                                    Clinical Datasets Statistics
-                                </h2>
-                                <div className="flex justify-center items-center">
-                                    {clinicalDatasets.length > 0 ? (
-                                        <Chart
-                                            type="doughnut"
-                                            data={clinical_chart_data}
-                                            options={getChartOptions(clinicalDatasets)}
-                                            className="w-120 h-120 sm:w-75 sm:h-75"
-                                        />
-                                    ) : (
-                                        <div className="flex flex-col items-center justify-center text-text-secondary text-bodySm py-12 gap-2">
-                                            <span className="text-bodyMd font-medium">
-                                                No clinical datasets available
-                                            </span>
+                            {clinicalMetricCharts.length > 0 ? (
+                                <div className="flex flex-row flex-wrap gap-6 items-stretch justify-start w-full">
+                                    {clinicalMetricCharts.map(item => (
+                                        <div
+                                            key={item.key}
+                                            className="flex flex-col items-center p-4 bg-white rounded-lg border border-border/60 hover:shadow-sm transition-shadow"
+                                        >
+                                            <div className="flex flex-col items-center gap-1 mb-2">
+                                                <span className="text-headingMd font-semibold text-text-primary">
+                                                    {item.title}
+                                                </span>
+                                                <span className="text-bodyXs text-text-secondary font-medium">
+                                                    Total: {item.total.toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="w-full h-56 flex items-center justify-center">
+                                                <Chart
+                                                    type="doughnut"
+                                                    data={item.chartData}
+                                                    options={item.options}
+                                                    className="w-full h-full"
+                                                />
+                                            </div>
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="text-text-secondary text-bodySm">
+                                    No pre clinical datasets available
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

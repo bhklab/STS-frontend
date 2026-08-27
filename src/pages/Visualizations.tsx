@@ -105,7 +105,7 @@ const Visualizations: React.FC = () => {
     const [filterHistology, setFilterHistology] = useState<string[]>([]);
 
     const isTreatment = layer === 'Treatment Response'; // True, if 'Treatment Response' is selected
-    const isImaging = layer === 'Imaging'; // True, if 'Imaging' is selected
+    const isImaging = layer === 'Pathology'; // True, if 'Pathology' is selected
     const entityLabel = useMemo(() => {
         if (isTreatment) return 'Drug';
         if (isImaging) return 'Morphology';
@@ -255,8 +255,8 @@ const Visualizations: React.FC = () => {
                 params: {
                     dataset_id: dataset_id,
                     sample_size: 5000,
-                    n_clusters: numClusters,
-                },
+                    n_clusters: numClusters
+                }
             });
             setImagingData(res.data);
         } catch (err) {
@@ -270,8 +270,8 @@ const Visualizations: React.FC = () => {
     const getDataLayers = async (dataset_id: number) => {
         const res = await apiClient.get(`/api/datasets/data-layers`, {
             params: {
-                dataset_id: dataset_id,
-            },
+                dataset_id: dataset_id
+            }
         });
         setSelectedGenes([]);
         setSelectedDrugs([]);
@@ -283,7 +283,7 @@ const Visualizations: React.FC = () => {
         if (firstLayer === 'Treatment Response') {
             if (!responseType) setResponseType('AAC');
             getAvailableDrugs(dataset_id);
-        } else if (firstLayer === 'Imaging') {
+        } else if (firstLayer === 'Pathology') {
             getImagingClustering(dataset_id, nClusters);
         } else {
             getAvailableGenes(dataset_id, firstLayer);
@@ -311,7 +311,7 @@ const Visualizations: React.FC = () => {
         if (layer === 'Treatment Response') {
             if (!responseType) setResponseType('AAC');
             getAvailableDrugs(dataset.id);
-        } else if (layer === 'Imaging') {
+        } else if (layer === 'Pathology') {
             getImagingClustering(dataset.id, nClusters);
         } else {
             getAvailableGenes(dataset.id, layer);
@@ -483,7 +483,7 @@ const Visualizations: React.FC = () => {
                             />
                         </div>
                     )}
-                    {layer === 'Imaging' ? (
+                    {layer === 'Pathology' ? (
                         <>
                             <div className="flex">
                                 <Dropdown
@@ -494,10 +494,11 @@ const Visualizations: React.FC = () => {
                                     }}
                                     options={[
                                         { label: '5 Clusters', value: 5 },
-                                        { label: '8 Clusters', value: 8 },
                                         { label: '10 Clusters', value: 10 },
-                                        { label: '12 Clusters', value: 12 },
                                         { label: '15 Clusters', value: 15 },
+                                        { label: '20 Clusters', value: 20 },
+                                        { label: '25 Clusters', value: 25 },
+                                        { label: '30 Clusters', value: 30 }
                                     ]}
                                     optionLabel="label"
                                     placeholder="Select clusters"
@@ -511,7 +512,7 @@ const Visualizations: React.FC = () => {
                                     options={[
                                         { label: 'Color by Cluster', value: 'cluster' },
                                         { label: 'Color by Histology', value: 'histology' },
-                                        { label: 'Color by Tissue', value: 'tissue' },
+                                        { label: 'Color by Tissue', value: 'tissue' }
                                     ]}
                                     optionLabel="label"
                                     placeholder="Color by"
@@ -736,7 +737,7 @@ const Visualizations: React.FC = () => {
                 </div>
                 <div className="flex flex-col flex-1 gap-6 wrap:w-full">
                     <div className="flex flex-1 bg-white rounded-md shadow-card border border-border/75 p-6 wrap:w-full wrap:flex-0">
-                        {layer === 'Imaging' ? (
+                        {layer === 'Pathology' ? (
                             retrievingImaging ? (
                                 <div className="flex flex-col flex-1 justify-center items-center h-full min-h-[450px] gap-4">
                                     <ProgressSpinner style={{ width: '45px', height: '45px' }} strokeWidth="3" />
@@ -750,7 +751,8 @@ const Visualizations: React.FC = () => {
                                     <div className="mb-2 flex flex-row justify-center items-center gap-1">
                                         <h1 className="text-headingMd font-semibold text-text-primary">Selected:</h1>
                                         <h2 className="text-headingSm text-text-primary font-light text-wrap break-words">
-                                            H&E Latent Space ({imagingData.n_clusters} Clusters, {imagingData.total_tiles.toLocaleString()} Subsampled Tiles)
+                                            H&E Latent Space ({imagingData.n_clusters} Clusters,{' '}
+                                            {imagingData.total_tiles.toLocaleString()} Subsampled Tiles)
                                         </h2>
                                     </div>
 
@@ -765,7 +767,7 @@ const Visualizations: React.FC = () => {
                             ) : (
                                 <div className="flex flex-1 justify-center items-center h-full min-h-[400px]">
                                     <p className="text-gray-400 font-medium">
-                                        No imaging tile embeddings found for this dataset.
+                                        No pathology tile embeddings found for this dataset.
                                     </p>
                                 </div>
                             )
@@ -797,15 +799,15 @@ const Visualizations: React.FC = () => {
                             <div className="flex flex-1 justify-center items-center h-full min-h-[400px]">
                                 <p className="text-gray-400 font-medium">
                                     Please select{' '}
-                                    {layer === 'Treatment Response' ? 'drugs' : `${entityLabel.toLowerCase()}s`} to display
-                                    visualization
+                                    {layer === 'Treatment Response' ? 'drugs' : `${entityLabel.toLowerCase()}s`} to
+                                    display visualization
                                 </p>
                             </div>
                         )}
                     </div>
 
                     {/* Cluster Tile Exemplars Detail Panel */}
-                    {layer === 'Imaging' && selectedClusterId !== null && imagingData && (
+                    {layer === 'Pathology' && selectedClusterId !== null && imagingData && (
                         <ClusterTileDetail
                             cluster={imagingData.clusters.find(c => c.cluster_id === selectedClusterId) || null}
                             color={GENE_COLORS[selectedClusterId % GENE_COLORS.length]}

@@ -201,7 +201,9 @@ const ClusterTileDetail: React.FC<ClusterTileDetailProps> = ({ cluster, color, o
                             </div>
                             <div>
                                 <span className="font-semibold text-text-secondary">PCA Position: </span>
-                                PC-1: {selectedTile.umap1 >= 0 ? '+' : ''}{selectedTile.umap1.toFixed(3)}, PC-2: {selectedTile.umap2 >= 0 ? '+' : ''}{selectedTile.umap2.toFixed(3)}
+                                PC-1: {selectedTile.umap1 >= 0 ? '+' : ''}
+                                {selectedTile.umap1.toFixed(3)}, PC-2: {selectedTile.umap2 >= 0 ? '+' : ''}
+                                {selectedTile.umap2.toFixed(3)}
                             </div>
                             <div>
                                 <span className="font-semibold text-text-secondary">Histology: </span>

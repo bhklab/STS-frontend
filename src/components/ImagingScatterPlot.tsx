@@ -20,7 +20,7 @@ const HISTOLOGY_COLORS: Record<string, string> = {
     SS: '#8b5cf6',
     MFH: '#6366f1',
     Other: '#64748b',
-    Unknown: '#94a3b8',
+    Unknown: '#94a3b8'
 };
 
 const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
@@ -28,7 +28,7 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
     clusters,
     selectedClusterId,
     onSelectCluster,
-    colorBy = 'cluster',
+    colorBy = 'cluster'
 }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [containerRef, width] = useContainerSize();
@@ -172,7 +172,9 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
             .attr('cy', d => yScale(d.umap2))
             .attr('r', 0)
             .attr('fill', d => getColor(d))
-            .attr('stroke', d => (selectedClusterId !== null && d.cluster_id === selectedClusterId ? '#ffffff' : 'none'))
+            .attr('stroke', d =>
+                selectedClusterId !== null && d.cluster_id === selectedClusterId ? '#ffffff' : 'none'
+            )
             .attr('stroke-width', d => (selectedClusterId !== null && d.cluster_id === selectedClusterId ? 1.5 : 0))
             .attr('opacity', d => {
                 if (selectedClusterId !== null) {
@@ -199,7 +201,8 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
             .on('mouseenter', (_event, d) => {
                 const color = getColor(d);
                 tooltip
-                    .html(`
+                    .html(
+                        `
                         <div style="font-family: inherit; font-size: 12px; line-height: 1.4;">
                             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
                                 <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${color};"></span>
@@ -215,7 +218,8 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
                                 Click point to inspect exemplar tiles
                             </div>
                         </div>
-                    `)
+                    `
+                    )
                     .style('opacity', '1');
             })
             .on('mousemove', event => {
@@ -259,12 +263,14 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
             .style('align-items', 'center')
             .style('justify-content', 'space-between')
             .style('margin-bottom', '8px')
-            .html(`
+            .html(
+                `
                 <span style="font-size: 13px; font-weight: 600; color: #1f2937;">
                     ${colorBy === 'histology' ? 'Histologies' : colorBy === 'tissue' ? 'Tissues' : 'Clusters / Archetypes'}
                 </span>
                 ${selectedClusterId !== null ? `<span style="font-size: 11px; color: #2563eb; cursor: pointer; text-decoration: underline;">Clear</span>` : ''}
-            `)
+            `
+            )
             .on('click', () => {
                 if (selectedClusterId !== null) onSelectCluster(null);
             });
@@ -295,7 +301,11 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
                         onSelectCluster(isSelected ? null : c.cluster_id);
                     });
 
-                const left = item.append('xhtml:div').style('display', 'flex').style('align-items', 'center').style('gap', '6px');
+                const left = item
+                    .append('xhtml:div')
+                    .style('display', 'flex')
+                    .style('align-items', 'center')
+                    .style('gap', '6px');
 
                 left.append('xhtml:span')
                     .style('display', 'inline-block')
@@ -311,10 +321,7 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
                     .style('font-weight', isSelected ? '600' : '400')
                     .text(c.name);
 
-                item.append('xhtml:span')
-                    .style('font-size', '10px')
-                    .style('color', '#94a3b8')
-                    .text(`${c.tile_count}`);
+                item.append('xhtml:span').style('font-size', '10px').style('color', '#94a3b8').text(`${c.tile_count}`);
             });
         } else if (colorBy === 'histology') {
             const histCounts = new Map<string, number>();
@@ -332,7 +339,11 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
                     .style('justify-content', 'space-between')
                     .style('padding', '3px 4px');
 
-                const left = item.append('xhtml:div').style('display', 'flex').style('align-items', 'center').style('gap', '6px');
+                const left = item
+                    .append('xhtml:div')
+                    .style('display', 'flex')
+                    .style('align-items', 'center')
+                    .style('gap', '6px');
 
                 left.append('xhtml:span')
                     .style('display', 'inline-block')
@@ -342,15 +353,9 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
                     .style('background', histColor)
                     .style('flex-shrink', '0');
 
-                left.append('xhtml:span')
-                    .style('font-size', '11px')
-                    .style('color', '#5f6f7f')
-                    .text(hist);
+                left.append('xhtml:span').style('font-size', '11px').style('color', '#5f6f7f').text(hist);
 
-                item.append('xhtml:span')
-                    .style('font-size', '10px')
-                    .style('color', '#94a3b8')
-                    .text(`${count}`);
+                item.append('xhtml:span').style('font-size', '10px').style('color', '#94a3b8').text(`${count}`);
             });
         } else {
             const tissueCounts = new Map<string, number>();
@@ -368,7 +373,11 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
                     .style('justify-content', 'space-between')
                     .style('padding', '3px 4px');
 
-                const left = item.append('xhtml:div').style('display', 'flex').style('align-items', 'center').style('gap', '6px');
+                const left = item
+                    .append('xhtml:div')
+                    .style('display', 'flex')
+                    .style('align-items', 'center')
+                    .style('gap', '6px');
 
                 left.append('xhtml:span')
                     .style('display', 'inline-block')
@@ -378,15 +387,9 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
                     .style('background', tissueColor)
                     .style('flex-shrink', '0');
 
-                left.append('xhtml:span')
-                    .style('font-size', '11px')
-                    .style('color', '#5f6f7f')
-                    .text(tissue);
+                left.append('xhtml:span').style('font-size', '11px').style('color', '#5f6f7f').text(tissue);
 
-                item.append('xhtml:span')
-                    .style('font-size', '10px')
-                    .style('color', '#94a3b8')
-                    .text(`${count}`);
+                item.append('xhtml:span').style('font-size', '10px').style('color', '#94a3b8').text(`${count}`);
             });
         }
 
