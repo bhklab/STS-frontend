@@ -14,12 +14,11 @@ const Navbar: React.FC = () => {
     }, []);
 
     const navItems = [
-        { label: 'Visualizations', path: '/visualizations' },
-        { label: 'Analyses', path: '/analyses' },
-        { label: 'Datasets', path: '/datasets' },
-        { label: 'AI Assistant', path: '/ai-assistant' },
-        { label: 'Help', path: '/help' },
-        { label: 'About', path: '/about' }
+        { label: 'Visualizations', path: '/visualizations', comingSoon: false },
+        { label: 'Analyses', path: '/analyses', comingSoon: true },
+        { label: 'Datasets', path: '/datasets', comingSoon: false },
+        { label: 'AI Assistant', path: '/ai-assistant', comingSoon: true },
+        { label: 'Docs', path: '/docs', comingSoon: false }
     ];
 
     return (
@@ -40,7 +39,7 @@ const Navbar: React.FC = () => {
                     {navItems.map(item => (
                         <button
                             key={item.path}
-                            className="flex items-center justify-center my-auto hover:cursor-pointer group"
+                            className="flex items-center justify-center my-auto hover:cursor-pointer group disabled"
                             onClick={() => navigate(item.path)}
                         >
                             {/* Grid wrapper stacks visible text over invisible bold width placeholder */}

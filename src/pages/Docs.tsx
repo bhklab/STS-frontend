@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Overview, Functionality, Data } from '../components/AboutSections';
+import { Overview, Functionality, Data, Contact } from '../components/AboutSections';
 
 type SectionProps = {
     scrollTarget?: string | null;
@@ -11,7 +11,7 @@ type SectionDef = {
     subsections: { id: string; value: string }[];
 };
 
-const About: React.FC = () => {
+const Docs: React.FC = () => {
     const sections: SectionDef[] = useMemo(
         () => [
             {
@@ -19,7 +19,9 @@ const About: React.FC = () => {
                 component: Overview,
                 subsections: [
                     { id: 'sts-overview', value: 'Soft Tissue Sarcoma' },
-                    { id: 'platform-goals', value: 'Platform Goals' }
+                    { id: 'platform-goals', value: 'Platform Goals' },
+                    { id: 'dac-team', value: 'DAC Team' },
+                    { id: 'acknowledgements', value: 'Acknowledgements' }
                 ]
             },
             {
@@ -34,6 +36,14 @@ const About: React.FC = () => {
                     { id: 'visualizations', value: 'Visualizations' },
                     { id: 'analyses', value: 'Analyses' },
                     { id: 'ai-integration', value: 'AI Integration' }
+                ]
+            },
+            {
+                id: 'Contact',
+                component: Contact,
+                subsections: [
+                    { id: 'location', value: 'Location' },
+                    { id: 'contact', value: 'Contacting the Team' }
                 ]
             }
         ],
@@ -97,4 +107,4 @@ const About: React.FC = () => {
     );
 };
 
-export default About;
+export default Docs;
