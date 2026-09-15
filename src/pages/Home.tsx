@@ -275,12 +275,6 @@ const Home: React.FC = () => {
                         </span>
                         <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Cell Lines</span>
                     </div>
-                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={landingPageStats.total_genes} duration={1400} />
-                        </span>
-                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Genes</span>
-                    </div>
                 </div>
             </div>
         </div>
