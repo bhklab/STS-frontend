@@ -83,11 +83,11 @@ const METRIC_CONFIGS: LayerMetricConfig[] = [
         title: 'Drugs',
         getValue: d => d.total_drugs || 0
     },
-    {
-        key: 'genes',
-        title: 'Genes',
-        getValue: d => d.total_genes || 0
-    },
+    // {
+    //     key: 'genes',
+    //     title: 'Genes',
+    //     getValue: d => d.total_genes || 0
+    // },
     {
         key: 'slides',
         title: 'Pathology Slides',
