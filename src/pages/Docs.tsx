@@ -34,7 +34,7 @@ const Docs: React.FC = () => {
                 component: Functionality,
                 subsections: [
                     { id: 'visualizations', value: 'Visualizations' },
-                    { id: 'analyses', value: 'Analyses' },
+                    // { id: 'analyses', value: 'Analyses' },
                     { id: 'ai-integration', value: 'AI Integration' }
                 ]
             },
@@ -43,7 +43,7 @@ const Docs: React.FC = () => {
                 component: Contact,
                 subsections: [
                     { id: 'location', value: 'Location' },
-                    { id: 'contact', value: 'Contacting the Team' }
+                    { id: 'contact', value: 'Digital Contact' }
                 ]
             }
         ],
