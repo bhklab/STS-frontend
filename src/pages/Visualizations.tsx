@@ -7,7 +7,7 @@ import Heatmap from '../components/Heatmap';
 import ViolinPlot from '../components/ViolinPlot';
 import ImagingScatterPlot from '../components/ImagingScatterPlot';
 import ClusterTileDetail, { type ExemplarTile, type ImagingCluster } from '../components/ClusterTileDetail';
-import { Tooltip } from 'primereact/tooltip';
+import { Tooltip, type TooltipPassThroughOptions } from 'primereact/tooltip';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { MultiSelect } from 'primereact/multiselect';
 import apiClient from '../api/axiosClient';
@@ -49,6 +49,26 @@ const AGE_RANGES: AgeRange[] = [
     { label: '85-94', min: 85, max: 94 },
     { label: '95+', min: 95, max: 110 }
 ];
+
+const tooltipPt: TooltipPassThroughOptions = {
+    arrow: {
+        style: {
+            borderBottomColor: 'rgba(31, 41, 55, 0.92)'
+        }
+    },
+    text: {
+        style: {
+            background: 'rgba(31, 41, 55, 0.92)',
+            color: '#fff',
+            padding: '6px 10px',
+            borderRadius: '6px',
+            fontSize: '12px',
+            lineHeight: '1.4',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)'
+        }
+    }
+};
 
 const Visualizations: React.FC = () => {
     const [clinical, setClinical] = useState(false);
@@ -407,8 +427,8 @@ const Visualizations: React.FC = () => {
             <div
                 className={`flex flex-row gap-4 max-w-[2000px] m-auto min-h-screen justify-center items-start wrap:justify-start wrap:flex-col wrap:w-full`}
             >
-                <Tooltip target=".preclinical-icon" />
-                <Tooltip target=".clinical-icon" />
+                <Tooltip target=".preclinical-icon" pt={tooltipPt} />
+                <Tooltip target=".clinical-icon" pt={tooltipPt} />
                 <div className="flex flex-col w-60 gap-4 bg-white p-4 rounded-md shadow-card border border-border/75 wrap:w-full wrap:flex-row wrap:flex-wrap">
                     <div className="flex flex-row">
                         <div className="flex flex-row gap-4 justify-center">
