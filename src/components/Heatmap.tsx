@@ -54,18 +54,8 @@ const Heatmap: React.FC<HeatmapProps> = ({ data, treatment, entityLabel, valueLa
 
         if (flat.length === 0) return;
 
-        // Sort cell lines by average expression across all genes (ascending)
-        const cellLineAvg = new Map<string, number>();
-        const cellLineCounts = new Map<string, number>();
-        flat.forEach(d => {
-            cellLineAvg.set(d.cellLine, (cellLineAvg.get(d.cellLine) ?? 0) + d.value);
-            cellLineCounts.set(d.cellLine, (cellLineCounts.get(d.cellLine) ?? 0) + 1);
-        });
-        const cellLines = Array.from(cellLineAvg.keys()).sort((a, b) => {
-            const avgA = (cellLineAvg.get(a) ?? 0) / (cellLineCounts.get(a) ?? 1);
-            const avgB = (cellLineAvg.get(b) ?? 0) / (cellLineCounts.get(b) ?? 1);
-            return avgA - avgB;
-        });
+        // Cell lines in natural order without sorting
+        const cellLines = Array.from(new Set(flat.map(d => d.cellLine)));
 
         // Exact square grid dimensions
         const actualGridWidth = cellLines.length * cellSize;

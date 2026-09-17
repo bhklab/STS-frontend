@@ -41,32 +41,14 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
         if (flat.length === 0) return;
 
         const isSingleGene = geneNames.length === 1;
-        const colWidth = 85;
-        const maxRows = Math.ceil(geneNames.length / 2);
 
         // Dimensions
         const margin = { top: 30, right: 220, bottom: 100, left: 70 };
         const innerW = width - margin.left - margin.right;
         const innerH = height - margin.top - margin.bottom;
 
-        // Sort cell lines
-        let cellLines: string[] = [];
-        if (isSingleGene) {
-            const sorted = [...flat].sort((a, b) => a.value - b.value);
-            cellLines = Array.from(new Set(sorted.map(d => d.cellLine)));
-        } else {
-            const cellLineAvg = new Map<string, number>();
-            const cellLineCount = new Map<string, number>();
-            flat.forEach(d => {
-                cellLineAvg.set(d.cellLine, (cellLineAvg.get(d.cellLine) ?? 0) + d.value);
-                cellLineCount.set(d.cellLine, (cellLineCount.get(d.cellLine) ?? 0) + 1);
-            });
-            cellLines = Array.from(cellLineAvg.keys()).sort((a, b) => {
-                const avgA = (cellLineAvg.get(a) ?? 0) / (cellLineCount.get(a) ?? 1);
-                const avgB = (cellLineAvg.get(b) ?? 0) / (cellLineCount.get(b) ?? 1);
-                return avgA - avgB;
-            });
-        }
+        // Cell lines in natural order without sorting
+        const cellLines = Array.from(new Set(flat.map(d => d.cellLine)));
 
         // Scales
         const xScale = d3.scaleBand<string>().domain(cellLines).range([0, innerW]).padding(0.3);
@@ -171,30 +153,20 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
         };
 
         // Connecting lines per gene (drawn before dots so dots sit on top)
-        const cellLineOrder = new Map(cellLines.map((cl, i) => [cl, i]));
 
-        geneNames.forEach(geneName => {
-            const genePoints = flat
-                .filter(d => d.gene === geneName)
-                .sort((a, b) => (cellLineOrder.get(a.cellLine) ?? 0) - (cellLineOrder.get(b.cellLine) ?? 0));
+        // geneNames.forEach(geneName => {
+        //     const genePoints = flat.filter(d => d.gene === geneName);
 
-            const lineGenerator = d3
-                .line<FlatDataPoint>()
-                .x(d => getCx(d))
-                .y(d => yScale(d.value))
-                .curve(d3.curveMonotoneX);
+        //     g.append('path')
+        //         .datum(genePoints)
+        //         .attr('class', 'gene-line')
+        //         .attr('fill', 'none')
+        //         .attr('stroke', geneColorScale(geneName))
+        //         .attr('stroke-width', 5)
+        //         .attr('stroke-opacity', 0.8);
+        // });
 
-            g.append('path')
-                .datum(genePoints)
-                .attr('class', 'gene-line')
-                .attr('fill', 'none')
-                .attr('stroke', geneColorScale(geneName))
-                .attr('stroke-width', 2.5)
-                .attr('stroke-opacity', 0.8)
-                .attr('d', lineGenerator);
-        });
-
-        // Dots (Always colored by tissue, outlined with gene color)
+        // Dots (Always colored by gene colour, outlined with tissue colour)
         g.selectAll('.dot')
             .data(flat)
             .enter()
@@ -203,14 +175,14 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
             .attr('cx', getCx)
             .attr('cy', d => yScale(d.value))
             .attr('r', 0)
-            .attr('fill', d => TISSUE_COLORS[d.tissue] ?? DEFAULT_COLOR)
-            .attr('stroke', d => (isSingleGene ? '#ffffff' : geneColorScale(d.gene)))
-            .attr('stroke-width', isSingleGene ? 1 : 1.5)
+            .attr('fill', d => geneColorScale(d.gene))
+            .attr('stroke', d => TISSUE_COLORS[d.tissue] ?? DEFAULT_COLOR)
+            .attr('stroke-width', 3)
             .attr('opacity', 0.95)
             .transition()
             .duration(400)
             .delay((_, i) => i * 8)
-            .attr('r', isSingleGene ? 6 : 5);
+            .attr('r', 5.5);
 
         // Hover targets
         g.selectAll('.dot-hover')
@@ -278,11 +250,11 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
             item.append('xhtml:span')
                 .style('display', 'inline-block')
                 .style('width', '12px')
-                .style('height', '3px')
+                .style('height', '12px')
+                .style('border-radius', '50%')
                 .style('background', geneColorScale(gName))
-                .style('margin-top', '6px')
-                .style('flex-shrink', '0')
-                .style('border-radius', '1.5px');
+                .style('margin-top', '2px')
+                .style('flex-shrink', '0');
 
             item.append('xhtml:span')
                 .style('font-size', '11px')
@@ -319,10 +291,12 @@ const DotPlot: React.FC<DotPlotProps> = ({ data, treatment, entityLabel, valueLa
 
             item.append('xhtml:span')
                 .style('display', 'inline-block')
-                .style('width', '9px')
-                .style('height', '9px')
+                .style('width', '14px')
+                .style('height', '14px')
                 .style('border-radius', '50%')
-                .style('background', TISSUE_COLORS[t] ?? DEFAULT_COLOR)
+                .style('background', '#ffffff')
+                .style('border', `3px solid ${TISSUE_COLORS[t] ?? DEFAULT_COLOR}`)
+                .style('box-sizing', 'border-box')
                 .style('flex-shrink', '0');
 
             item.append('xhtml:span')

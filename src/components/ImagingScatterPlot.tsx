@@ -150,7 +150,7 @@ const ImagingScatterPlot: React.FC<ImagingScatterPlotProps> = ({
             .append('div')
             .style('position', 'absolute')
             .style('pointer-events', 'none')
-            .style('background', 'rgba(31,41,55,0.92)')
+            .style('background', '#5f6f7f')
             .style('color', '#fff')
             .style('padding', '8px 12px')
             .style('border-radius', '6px')

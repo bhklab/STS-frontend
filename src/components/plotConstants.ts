@@ -23,10 +23,8 @@ export const TISSUE_COLORS: Record<string, string> = {
 
 // 20 distinct, accessible, and curated colors for up to 20 genes
 export const GENE_COLORS = [
-    '#006494', // Baltic Blue
     '#10b981', // Emerald
     '#8b5cf6', // Purple
-    '#f59e0b', // Amber
     '#ec4899', // Pink
     '#06b6d4', // Cyan
     '#f97316', // Orange
@@ -37,6 +35,8 @@ export const GENE_COLORS = [
     '#e11d48', // Rose
     '#3b82f6', // Bright Blue
     '#a855f7', // Violet
+    '#f59e0b', // Amber
+    '#006494', // Baltic Blue
     '#eab308', // Yellow
     '#22c55e', // Green
     '#64748b', // Slate
