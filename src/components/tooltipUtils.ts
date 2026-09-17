@@ -1,7 +1,5 @@
-import type { PlotDataPoint } from './plotConstants';
-
 /**
- * Build rich tooltip HTML from a data point, showing all populated metadata fields.
+ * Rich tooltip HTML from a data point, showing all populated metadata fields.
  * Used by DotPlot, Heatmap, and ViolinPlot.
  */
 export function buildTooltipHtml(
@@ -11,26 +9,31 @@ export function buildTooltipHtml(
     point: { cellLine: string; value: number; tissue: string } & Record<string, any>
 ): string {
     const lines: string[] = [
-        `<strong>${entityLabel}: </strong>${entityValue}`,
-        `<strong>Cell Line: </strong>${point.cellLine}`,
-        `<strong>${valueLabel}: </strong>${point.value.toFixed(2)}`,
-        `<strong>Tissue: </strong>${point.tissue}`,
+		`<strong style="color: #99cadd">General Metadata</strong>`,
+        `${entityLabel}: ${entityValue}`,
+        `Cell Line: ${point.cellLine}`,
+        `${valueLabel}: ${point.value.toFixed(2)}`,
+        `Tissue: ${point.tissue}`,
     ];
 
     // Clinical sample metadata
-    if (point.race != null) lines.push(`<strong>Race: </strong>${point.race}`);
-    if (point.histology != null) lines.push(`<strong>Histology: </strong>${point.histology}`);
+	if (point.race != null || point.histology != null) lines.push(`<strong style="color: #99cadd">Sample Metadata</strong>`);
+    if (point.race != null) lines.push(`Race: ${point.race}`);
+    if (point.histology != null) lines.push(`Histology: ${point.histology}`);
+
+	// Drug metadata
+	if (point.fda_approval != null || point.mechanism_action_type != null || point.mechanism_of_action != null) lines.push(`<strong style="color: #99cadd">Drug Metadata</strong>`);
+    if (point.fda_approval != null) lines.push(`FDA Approved Drug: ${point.fda_approval ? 'True' : 'False'}`);
+    if (point.mechanism_action_type != null) lines.push(`Mechanism of Action Type: ${point.mechanism_action_type}`);
+    if (point.mechanism_of_action != null) lines.push(`Mechanism of Action: ${point.mechanism_of_action}`);
 
     // Cell line / sample metadata
-    if (point.sex != null) lines.push(`<strong>Sex: </strong>${point.sex}`);
-    if (point.age != null) lines.push(`<strong>Age: </strong>${point.age}`);
-    if (point.second_level != null) lines.push(`<strong>Subtype: </strong>${point.second_level}`);
-    if (point.disease_descriptions != null) lines.push(`<strong>Disease: </strong>${point.disease_descriptions}`);
+	if (point.sex != null || point.age != null || point.second_level != null || point.disease_descriptions != null) lines.push(`<strong style="color: #99cadd">Cell Line Metadata</strong>`);
+    if (point.sex != null) lines.push(`Sex: ${point.sex}`);
+    if (point.age != null) lines.push(`Age: ${point.age}`);
+    if (point.second_level != null) lines.push(`Subtype: ${point.second_level}`);
+    if (point.disease_descriptions != null) lines.push(`Disease: ${point.disease_descriptions}`);
 
-    // Drug metadata
-    if (point.fda_approval != null) lines.push(`<strong>FDA Approved Drug: </strong>${point.fda_approval ? 'True' : 'False'}`);
-    if (point.mechanism_action_type != null) lines.push(`<strong>Mechanism of Action Type: </strong>${point.mechanism_action_type}`);
-    if (point.mechanism_of_action != null) lines.push(`<strong>Mechanism of Action: </strong>${point.mechanism_of_action}`);
 
     return lines.join('<br/>');
 }
