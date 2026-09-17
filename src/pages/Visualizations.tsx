@@ -549,7 +549,7 @@ const Visualizations: React.FC = () => {
                                 optionLabel="treatment_id"
                                 dataKey="treatment_id"
                                 filter
-                                selectionLimit={20}
+                                selectionLimit={10}
                                 virtualScrollerOptions={{ itemSize: 40 }}
                                 display="chip"
                                 placeholder="Select a drug"
@@ -571,7 +571,7 @@ const Visualizations: React.FC = () => {
                                 dataKey="gene_id"
                                 filter
                                 filterBy="name,gene_id"
-                                selectionLimit={20}
+                                selectionLimit={10}
                                 virtualScrollerOptions={{ itemSize: 40 }}
                                 display="chip"
                                 placeholder={`Select ${entityLabel.toLowerCase()}`}
