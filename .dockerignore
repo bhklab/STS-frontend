@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-ssr
+.git
+.gitignore
+.env*
+*.local
+.DS_Store
+Dockerfile*
+README.md
