@@ -52,11 +52,10 @@ const Assistant: React.FC = () => {
     return (
         <div className="flex flex-col bg-background h-[92vh] items-center">
             <div className="flex flex-col gap-3 flex-1 w-[80%] overflow-y-auto mt-10 rounded-sm p-4">
-                {messages.length === 0 && <p className="text-text-primary/60">Messages will appear here</p>}
                 {messages.map((message, index) => (
                     <div
                         key={index}
-                        className={`max-w-[75%] p-4 rounded-lg text-text-primary ${
+                        className={`max-w-[75%] p-3 rounded-lg text-text-primary ${
                             message.role === 'user'
                                 ? 'self-end whitespace-pre-wrap bg-subsection-3 rounded-md border border-subsection-4/50'
                                 : 'self-start bg-white rounded-md border border-border'
@@ -80,14 +79,14 @@ const Assistant: React.FC = () => {
                         if (event.key === 'Enter') sendPrompt();
                     }}
                     placeholder="Ask about the platform, datasets, and visualizations."
-                    className="border border-border/50 rounded-lg w-full text-bodyXl text-text-primary bg-white px-2 py-2 focus:outline-none"
+                    className="border border-border/50 rounded-lg w-full text-bodyLg text-text-primary bg-white px-2 py-2 focus:outline-none focus:border-subsection-3"
                 />
                 <button
                     onClick={sendPrompt}
                     disabled={loading}
-                    className="p-3 rounded-md cursor-pointer bg-white borrder"
+                    className="p-3 rounded-md cursor-pointer bg-white border border-border/50 hover:bg-subsection-1 hover:border-subsection-3 focus:outline-none focus:border-subsection-3 focus:bg-subsection-1 group"
                 >
-                    <SendHorizonal className="w-4 h-4 text-text-primary hover:text-primary" />
+                    <SendHorizonal className="w-4 h-4 text-text-primary group-hover:text-primary group-focus:text-primary" />
                 </button>
             </div>
         </div>
