@@ -3,7 +3,6 @@ dist
 dist-ssr
 .git
 .gitignore
-.env*
 *.local
 .DS_Store
 Dockerfile*

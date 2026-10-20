@@ -48,84 +48,6 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ end, duration = 2000 
     return <>{count}</>;
 };
 
-const clinical_datasets = [
-    {
-        name: 'TCGA',
-        id: 1,
-        description:
-            'TCGA Sarcoma is described as a multi-platform molecular landscape of 206 adult soft tissue sarcomas representing 6 major types. Along with novel insights into the biology of individual sarcoma types, we report three overarching findings: 1) unlike most epithelial malignancies, these sarcomas (excepting synovial sarcoma) are characterized predominantly by copy number changes, with low mutational loads and only a few genes (TP53, ATRX, RB1) highly recurrently mutated across sarcoma types, 2) within sarcoma types, genomic and regulomic diversity of driver pathways defines molecular subtypes associated with patient outcome, and 3) the immune microenvironment, inferred from DNA methylation and mRNA profiles, associates with outcome and may inform clinical trials of immune checkpoint inhibitors.',
-        version: '2017',
-        layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
-    },
-    {
-        name: 'German',
-        id: 2,
-        description:
-            'TCGA Sarcoma is described as a multi-platform molecular landscape of 206 adult soft tissue sarcomas representing 6 major types. Along with novel insights into the biology of individual sarcoma types, we report three overarching findings: 1) unlike most epithelial malignancies, these sarcomas (excepting synovial sarcoma) are characterized predominantly by copy number changes, with low mutational loads and only a few genes (TP53, ATRX, RB1) highly recurrently mutated across sarcoma types, 2) within sarcoma types, genomic and regulomic diversity of driver pathways defines molecular subtypes associated with patient outcome, and 3) the immune microenvironment, inferred from DNA methylation and mRNA profiles, associates with outcome and may inform clinical trials of immune checkpoint inhibitors.',
-        version: '2017',
-        layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
-    },
-    {
-        name: 'Hemming',
-        id: 3,
-        description:
-            'TCGA Sarcoma is described as a multi-platform molecular landscape of 206 adult soft tissue sarcomas representing 6 major types. Along with novel insights into the biology of individual sarcoma types, we report three overarching findings: 1) unlike most epithelial malignancies, these sarcomas (excepting synovial sarcoma) are characterized predominantly by copy number changes, with low mutational loads and only a few genes (TP53, ATRX, RB1) highly recurrently mutated across sarcoma types, 2) within sarcoma types, genomic and regulomic diversity of driver pathways defines molecular subtypes associated with patient outcome, and 3) the immune microenvironment, inferred from DNA methylation and mRNA profiles, associates with outcome and may inform clinical trials of immune checkpoint inhibitors.',
-        version: '2017',
-        layers: ['RNAseq', 'Mutations', 'Copy Number Variation', 'Methylation']
-    }
-];
-
-const preclinical_datasets = [
-    {
-        name: 'CCLE',
-        id: 1,
-        description:
-            'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-        version: '2019',
-        layers: [
-            'Treatment Response',
-            'RNA-seq',
-            'Microarray',
-            'Mutation',
-            'Copy Number Variation',
-            'Methylation',
-            'RPPA'
-        ]
-    },
-    {
-        name: 'GDSC',
-        id: 2,
-        description:
-            'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-        version: '2020',
-        layers: ['RNA-seq', 'Microarray', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
-    },
-    {
-        name: 'CTRP',
-        id: 3,
-        description:
-            'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-        version: '2015',
-        layers: ['Treatment Response', 'Mutation', 'Copy Number Variation']
-    },
-    {
-        name: 'gCSI',
-        id: 4,
-        description:
-            'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-        version: '2019',
-        layers: ['RNA-seq', 'Mutation', 'Copy Number Variation', 'Methylation', 'RPPA']
-    },
-    {
-        name: 'NCI Sarcoma',
-        id: 5,
-        description:
-            'CCLE includes harmonized genomic, transcriptomic, and new proteomic profiles (RPPA) with standardized annotations, enabling the study of cancer-specific molecular features and therapeutic vulnerabilities across diverse cell lines',
-        version: '2015',
-        layers: ['Microarray', 'miRNA']
-    }
-];
-
 const platformFeatures = [
     {
         icon: HardDrive,
@@ -230,52 +152,70 @@ const Home: React.FC = () => {
                         })}
                     </div>
                 </div>
-                <div className="flex flex-wrap justify-center items-center max-w-[1000px] w-full gap-4 absolute bottom-8 md:static md:bottom-3">
-                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={landingPageStats.total_clinical_datasets} duration={1200} />
-                        </span>
-                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                            Clinical Datasets
-                        </span>
-                    </div>
-                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={landingPageStats.total_pre_clinical_datasets} duration={1300} />
-                        </span>
-                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                            Pre Clinical Datasets
-                        </span>
-                    </div>
-                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={landingPageStats.total_clinical_samples} duration={1800} />
-                        </span>
-                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                            Clinical Samples
-                        </span>
-                    </div>
-                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={landingPageStats.total_pre_clinical_samples} duration={2200} />
-                        </span>
-                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                            Preclinical Samples
-                        </span>
-                    </div>
-                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={landingPageStats.total_drugs} duration={2200} />
-                        </span>
-                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Drugs</span>
-                    </div>
-                    <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
-                        <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                            <AnimatedCounter end={landingPageStats.total_cell_lines} duration={2200} />
-                        </span>
-                        <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Cell Lines</span>
-                    </div>
-                </div>
+                {landingPageStats.total_cell_lines &&
+                    landingPageStats.total_clinical_datasets &&
+                    landingPageStats.total_clinical_samples &&
+                    landingPageStats.total_drugs &&
+                    landingPageStats.total_genes &&
+                    landingPageStats.total_pre_clinical_datasets &&
+                    landingPageStats.total_pre_clinical_samples && (
+                        <div className="flex flex-wrap justify-center items-center max-w-[1000px] w-full gap-4 absolute bottom-8 md:static md:bottom-3">
+                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
+                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                    <AnimatedCounter end={landingPageStats.total_clinical_datasets} duration={1200} />
+                                </span>
+                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                    Clinical Datasets
+                                </span>
+                            </div>
+                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
+                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                    <AnimatedCounter
+                                        end={landingPageStats.total_pre_clinical_datasets}
+                                        duration={1300}
+                                    />
+                                </span>
+                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                    Pre Clinical Datasets
+                                </span>
+                            </div>
+                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
+                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                    <AnimatedCounter end={landingPageStats.total_clinical_samples} duration={1800} />
+                                </span>
+                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                    Clinical Samples
+                                </span>
+                            </div>
+                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
+                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                    <AnimatedCounter
+                                        end={landingPageStats.total_pre_clinical_samples}
+                                        duration={2200}
+                                    />
+                                </span>
+                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                    Preclinical Samples
+                                </span>
+                            </div>
+                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
+                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                    <AnimatedCounter end={landingPageStats.total_drugs} duration={2200} />
+                                </span>
+                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                    Drugs
+                                </span>
+                            </div>
+                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
+                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                    <AnimatedCounter end={landingPageStats.total_cell_lines} duration={2200} />
+                                </span>
+                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                    Cell Lines
+                                </span>
+                            </div>
+                        </div>
+                    )}
             </div>
         </div>
     );

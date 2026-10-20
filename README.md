@@ -48,7 +48,7 @@ gcloud run deploy sts-frontend \
   --region northamerica-northeast2 \
   --allow-unauthenticated \
   --memory 4Gi \
-  --cpu 2 \
+  --cpu 1 \
   --min-instances 0 \
   --max-instances 2
 ```
