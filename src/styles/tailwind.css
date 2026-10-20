@@ -93,6 +93,11 @@
     line-height: 16px;
 }
 
+@utility text-bodyXl {
+    font-size: 18px;
+    line-height: 28px;
+}
+
 @utility text-bodyLg {
     font-size: 16px;
     line-height: 24px;

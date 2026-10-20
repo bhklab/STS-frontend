@@ -38,7 +38,7 @@ const Navbar: React.FC = () => {
         { label: 'Visualizations', path: '/visualizations', comingSoon: false, id: 'visualizations' },
         { label: 'Analyses', path: '/analyses', comingSoon: true, id: 'analyses' },
         { label: 'Datasets', path: '/datasets', comingSoon: false, id: 'datasets' },
-        { label: 'AI Assistant', path: '/ai-assistant', comingSoon: true, id: 'ai-assistant' },
+        { label: 'AI Assistant', path: '/ai-assistant', comingSoon: false, id: 'ai-assistant' },
         { label: 'Docs', path: '/docs', comingSoon: false, id: 'docs' }
     ];
 
@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
             }`}
         >
             <Tooltip target=".analyses" position="right" content="Coming Soon!" pt={tooltipPt} mouseTrack={false} />
-            <Tooltip target=".ai-assistant" position="right" content="Coming Soon!" pt={tooltipPt} mouseTrack={false} />
+            {/* <Tooltip target=".ai-assistant" position="right" content="Coming Soon!" pt={tooltipPt} mouseTrack={false} /> */}
             <div className="flex flex-row gap-6">
                 <img
                     src="/logos/sts_portal-logo-2.png"
