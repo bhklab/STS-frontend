@@ -50,7 +50,7 @@ const Assistant: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col bg-background h-[95vh] items-center">
+        <div className="flex flex-col bg-background h-[92vh] items-center">
             <div className="flex flex-col gap-3 flex-1 w-[80%] overflow-y-auto mt-10 rounded-sm p-4">
                 {messages.length === 0 && <p className="text-text-primary/60">Messages will appear here</p>}
                 {messages.map((message, index) => (

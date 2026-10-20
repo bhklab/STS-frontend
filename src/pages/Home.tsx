@@ -99,7 +99,7 @@ const Home: React.FC = () => {
     }, []);
 
     return (
-        <div className="flex flex-col bg-background min-h-[95vh] justify-center items-center">
+        <div className="flex flex-col bg-background min-h-[92vh] justify-center items-center">
             <div className="flex flex-col justify-center items-center w-full px-24 py-20 max-w-[2200px]">
                 <div className="flex flex-row md:flex-col gap-32 items-baseline mb-40">
                     <div className="flex flex-col gap-6 justify-center flex-1 w-full">
@@ -153,69 +153,63 @@ const Home: React.FC = () => {
                     </div>
                 </div>
                 {landingPageStats.total_cell_lines &&
-                    landingPageStats.total_clinical_datasets &&
-                    landingPageStats.total_clinical_samples &&
-                    landingPageStats.total_drugs &&
-                    landingPageStats.total_genes &&
-                    landingPageStats.total_pre_clinical_datasets &&
-                    landingPageStats.total_pre_clinical_samples && (
-                        <div className="flex flex-wrap justify-center items-center max-w-[1000px] w-full gap-4 absolute bottom-8 md:static md:bottom-3">
-                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                                    <AnimatedCounter end={landingPageStats.total_clinical_datasets} duration={1200} />
-                                </span>
-                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                                    Clinical Datasets
-                                </span>
-                            </div>
-                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                                    <AnimatedCounter
-                                        end={landingPageStats.total_pre_clinical_datasets}
-                                        duration={1300}
-                                    />
-                                </span>
-                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                                    Pre Clinical Datasets
-                                </span>
-                            </div>
-                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
-                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                                    <AnimatedCounter end={landingPageStats.total_clinical_samples} duration={1800} />
-                                </span>
-                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                                    Clinical Samples
-                                </span>
-                            </div>
-                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
-                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                                    <AnimatedCounter
-                                        end={landingPageStats.total_pre_clinical_samples}
-                                        duration={2200}
-                                    />
-                                </span>
-                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                                    Preclinical Samples
-                                </span>
-                            </div>
-                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
-                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                                    <AnimatedCounter end={landingPageStats.total_drugs} duration={2200} />
-                                </span>
-                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                                    Drugs
-                                </span>
-                            </div>
-                            <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
-                                <span className="text-heading2Xl font-bold text-primary tracking-tight">
-                                    <AnimatedCounter end={landingPageStats.total_cell_lines} duration={2200} />
-                                </span>
-                                <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
-                                    Cell Lines
-                                </span>
-                            </div>
+                landingPageStats.total_clinical_datasets &&
+                landingPageStats.total_clinical_samples &&
+                landingPageStats.total_drugs &&
+                landingPageStats.total_genes &&
+                landingPageStats.total_pre_clinical_datasets &&
+                landingPageStats.total_pre_clinical_samples ? (
+                    <div className="flex flex-wrap justify-center items-center max-w-[1000px] w-full gap-4 absolute bottom-8 md:static md:bottom-3">
+                        <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
+                            <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                <AnimatedCounter end={landingPageStats.total_clinical_datasets} duration={1200} />
+                            </span>
+                            <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                Clinical Datasets
+                            </span>
                         </div>
-                    )}
+                        <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
+                            <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                <AnimatedCounter end={landingPageStats.total_pre_clinical_datasets} duration={1300} />
+                            </span>
+                            <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                Pre Clinical Datasets
+                            </span>
+                        </div>
+                        <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5 bg-white rounded-full shadow-lg border border-border">
+                            <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                <AnimatedCounter end={landingPageStats.total_clinical_samples} duration={1800} />
+                            </span>
+                            <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                Clinical Samples
+                            </span>
+                        </div>
+                        <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
+                            <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                <AnimatedCounter end={landingPageStats.total_pre_clinical_samples} duration={2200} />
+                            </span>
+                            <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                Preclinical Samples
+                            </span>
+                        </div>
+                        <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
+                            <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                <AnimatedCounter end={landingPageStats.total_drugs} duration={2200} />
+                            </span>
+                            <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">Drugs</span>
+                        </div>
+                        <div className="flex flex-row items-center justify-center gap-3 py-1.5 px-5  bg-white rounded-full shadow-lg border border-border">
+                            <span className="text-heading2Xl font-bold text-primary tracking-tight">
+                                <AnimatedCounter end={landingPageStats.total_cell_lines} duration={2200} />
+                            </span>
+                            <span className="text-bodyLg font-medium text-text-primary whitespace-nowrap">
+                                Cell Lines
+                            </span>
+                        </div>
+                    </div>
+                ) : (
+                    <></>
+                )}
             </div>
         </div>
     );
