@@ -1,6 +1,7 @@
 import { SendHorizonal } from 'lucide-react';
 import React, { useState } from 'react';
 import Markdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import apiClient from '../api/axiosClient';
 
 // Tailwind resets default browser styles, so give each Markdown element its look here
@@ -12,7 +13,16 @@ const markdownStyles: Components = {
     ul: ({ children }) => <ul className="list-disc pl-5 my-1 space-y-1">{children}</ul>,
     ol: ({ children }) => <ol className="list-decimal pl-5 my-1 space-y-1">{children}</ol>,
     strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-    code: ({ children }) => <code className="bg-background rounded px-1 text-sm">{children}</code>
+    code: ({ children }) => <code className="bg-background rounded px-1 text-sm">{children}</code>,
+    table: ({ children }) => (
+        <div className="overflow-x-auto my-2">
+            <table className="border-collapse text-sm">{children}</table>
+        </div>
+    ),
+    th: ({ children }) => (
+        <th className="border border-border bg-background px-2 py-1 text-left font-semibold">{children}</th>
+    ),
+    td: ({ children }) => <td className="border border-border px-2 py-1">{children}</td>
 };
 
 // One chat bubble: either something the user typed or the assistant's reply
@@ -61,9 +71,10 @@ const Assistant: React.FC = () => {
                                 : 'self-start bg-white rounded-md border border-border'
                         }`}
                     >
-                        {/* Assistant replies are Markdown; user messages are shown as typed */}
                         {message.role === 'assistant' ? (
-                            <Markdown components={markdownStyles}>{message.text}</Markdown>
+                            <Markdown remarkPlugins={[remarkGfm]} components={markdownStyles}>
+                                {message.text}
+                            </Markdown>
                         ) : (
                             <>{message.text}</>
                         )}
